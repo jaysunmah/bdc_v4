@@ -15,7 +15,7 @@ export default class BdcMenu extends Component {
           active={activeItem === 'editorials'}
           onClick={this.handleItemClick}
         >
-          Editorials
+          Editorials!
         </Menu.Item>
 
         <Menu.Item

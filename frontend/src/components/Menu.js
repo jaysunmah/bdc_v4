@@ -2,8 +2,8 @@ import React, { Component } from 'react'
 import { Menu } from 'semantic-ui-react'
 
 export default class BdcMenu extends Component {
-    state = {};
-    handleItemClick = (e, { name }) => this.setState({ activeItem: name });
+  state = {};
+  handleItemClick = (e, { name }) => this.setState({ activeItem: name });
 
   render() {
     const { activeItem } = this.state

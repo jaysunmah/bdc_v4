@@ -1,8 +1,14 @@
 import React, { Component } from "react";
 import { render } from "react-dom";
+import { createStore } from "redux";
+import { Provider } from "react-redux";
+import bdcApp from "../../reducers";
+
 import {Route, Switch, BrowserRouter} from 'react-router-dom';
 import Landing from "./Landing";
 import NotFound from "./NotFound";
+
+let store = createStore(bdcApp);
 
 class App extends Component {
   constructor(props) {
@@ -31,13 +37,15 @@ class App extends Component {
 
   render() {
     return (
-      <BrowserRouter>
-        <Switch>
-          <Route exact path="/" component={Landing} />
-          <Route exact path="/yolo" component={Landing} />
-          <Route component={NotFound} />
-        </Switch>
-      </BrowserRouter>
+      <Provider store={store}>
+        <BrowserRouter>
+          <Switch>
+            <Route exact path="/" component={Landing} />
+            <Route exact path="/yolo" component={Landing} />
+            <Route component={NotFound} />
+          </Switch>
+        </BrowserRouter>
+      </Provider>
     );
   }
 }

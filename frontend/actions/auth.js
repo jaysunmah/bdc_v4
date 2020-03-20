@@ -8,9 +8,10 @@ export const loadUser = () => {
       "Content-Type": "application/json",
     };
 
-    if (token) {
-      headers["Authorization"] = `Token ${token}`;
+    if (token == null) {
+      return;
     }
+    headers["Authorization"] = `Token ${token}`;
     return fetch("/api/auth/user/", {headers, })
       .then(res => {
         if (res.status < 500) {
@@ -59,6 +60,38 @@ export const login = (username, password) => {
           throw res.data;
         } else {
           dispatch({type: "LOGIN_FAILED", data: res.data});
+          throw res.data;
+        }
+      })
+  }
+}
+
+export const logout = () => {
+  return (dispatch, getState) => {
+    let headers = {
+      "Content-Type": "application/json",
+      "Authorization": `Token ${getState().auth.token}`
+    };
+
+    return fetch("/api/auth/logout/", {headers, body: "", method: "POST"})
+      .then(res => {
+        if (res.status === 204) {
+          return {status: res.status, data: {}};
+        } else if (res.status < 500) {
+          return res.json().then(data => {
+            return {status: res.status, data};
+          })
+        } else {
+          console.log("Server Error!");
+          throw res;
+        }
+      })
+      .then(res => {
+        if (res.status === 204) {
+          dispatch({type: 'LOGOUT_SUCCESSFUL'});
+          return res.data;
+        } else if (res.status === 403 || res.status === 401) {
+          dispatch({type: "AUTHENTICATION_ERROR", data: res.data});
           throw res.data;
         }
       })

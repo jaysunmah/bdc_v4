@@ -1,61 +1,73 @@
 import React, { Component } from 'react'
 import { Menu } from 'semantic-ui-react'
-import Login from './Login';
-import { Provider, connect } from "react-redux";
-import { createStore, applyMiddleware } from "redux";
-import thunk from "redux-thunk";
+import { connect } from "react-redux";
+import { Link } from "react-router-dom";
 
-import { auth } from '../../actions';
-import bdcApp from "../../reducers";
-
-let store = createStore(bdcApp, applyMiddleware(thunk));
+import { auth, menu } from '../../actions';
 
 class BdcMenu extends Component {
   state = {};
-  handleItemClick = (e, { name }) => this.setState({ activeItem: name });
+  handleItemClick = (e, { name }) => {
+    this.props.selectItem(name);
+  };
+
+  componentDidMount() {
+    this.props.loadUser();
+  }
 
   render() {
     const { activeItem } = this.state
 
-    let loginLogoutMenuItem = (<Login></Login>);
+    let loginLogoutMenuItem = (
+      <Menu.Item
+        position='right'
+        as={Link} to="/login"
+      >
+        Login
+      </Menu.Item>
+    );
     if (this.props.auth.isAuthenticated) {
       loginLogoutMenuItem = (
-        <Menu.Item position='right'>
+        <Menu.Item
+          position='right'
+          onClick={this.props.logout}
+        >
           Logout
         </Menu.Item>
       );
     }
 
     return (
-      <Provider store={store}>
         <Menu>
           <Menu.Item
-            name='editorials'
-            active={activeItem === 'editorials'}
+            name='home'
+            active={this.props.menu.active === 'home'}
             onClick={this.handleItemClick}
+            as={Link} to="/"
           >
-            Editorials!
+            Home
           </Menu.Item>
 
           <Menu.Item
             name='reviews'
-            active={activeItem === 'reviews'}
+            active={this.props.menu.active === 'reviews'}
             onClick={this.handleItemClick}
+            as={Link} to="/reviews"
           >
             Reviews
           </Menu.Item>
 
           <Menu.Item
-            name='upcomingEvents'
-            active={activeItem === 'upcomingEvents'}
+            name='people'
+            active={this.props.menu.active === 'people'}
             onClick={this.handleItemClick}
+            as={Link} to="/people"
           >
             Upcoming Events
           </Menu.Item>
 
           {loginLogoutMenuItem}
         </Menu>
-      </Provider>
     )
   }
 }
@@ -63,6 +75,7 @@ class BdcMenu extends Component {
 const mapStateToProps = state => {
   return {
     auth: state.auth,
+    menu: state.menu,
   }
 }
 
@@ -73,6 +86,10 @@ const mapDispatchToProps = dispatch => {
     },
     login: (username, password) => {
       return dispatch(auth.login(username, password));
+    },
+    logout: () => dispatch(auth.logout()),
+    selectItem: (item) => {
+      return dispatch(menu.selectItem(item))
     }
   }
 }

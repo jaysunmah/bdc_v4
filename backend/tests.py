@@ -8,4 +8,4 @@ class AnimalTestCase(TestCase):
 		self.assertEqual(helloworld.isPrime(3), True)
 		self.assertEqual(helloworld.isPrime(4), False)
 		self.assertEqual(helloworld.isPrime(9), False)
-		self.assertEqual(helloworld.isPrime('wtf', False)
+		self.assertEqual(helloworld.isPrime('test', False)

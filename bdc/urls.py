@@ -15,10 +15,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include, re_path
+from django.conf.urls import url
 
 urlpatterns = [
-    # Keep this as an example. Delete in the future if we want
-    path('api/lead/', include('leads.urls')),
+    url(r'^api/', include('backend.urls')),
+    url(r'^api/auth/', include('knox.urls')),
     path('admin/', admin.site.urls),
+    # pipe any other routes to be handled by react router
     re_path(r'^(?:.*)/?$', include('frontend.urls')),
 ]

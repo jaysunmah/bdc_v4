@@ -1,14 +1,16 @@
 import React, { Component } from "react";
 import { render } from "react-dom";
-import { createStore } from "redux";
+import {applyMiddleware, createStore} from "redux";
 import { Provider } from "react-redux";
-import bdcApp from "../../reducers";
-
 import {Route, Switch, BrowserRouter} from 'react-router-dom';
-import Landing from "./Landing";
-import NotFound from "./NotFound";
+import thunk from "redux-thunk";
 
-let store = createStore(bdcApp);
+import bdcApp from "../../reducers";
+let store = createStore(bdcApp, applyMiddleware(thunk));
+
+import Landing from "./Landing";
+import Login from "./Login";
+import NotFound from "./NotFound";
 
 class App extends Component {
   constructor(props) {
@@ -19,29 +21,13 @@ class App extends Component {
       placeholder: "Loading"
     };
   }
-  componentDidMount() {
-    fetch("api/lead")
-      .then(response => {
-        console.log(response);
-        if (response.status > 400) {
-          return this.setState(() => {
-            return { placeholder: "Something went wrong!" };
-          });
-        }
-        return response.json()
-      })
-      .then(data => {
-        console.log("data!", data);
-      });
-  }
-
   render() {
     return (
       <Provider store={store}>
         <BrowserRouter>
           <Switch>
             <Route exact path="/" component={Landing} />
-            <Route exact path="/yolo" component={Landing} />
+            <Route exact path="/login" component={Login} />
             <Route component={NotFound} />
           </Switch>
         </BrowserRouter>

@@ -17,7 +17,8 @@ from django.contrib import admin
 from django.urls import path, include, re_path
 
 urlpatterns = [
-    path('', include('leads.urls')),
+    # Keep this as an example. Delete in the future if we want
+    path('api/lead/', include('leads.urls')),
     path('admin/', admin.site.urls),
     re_path(r'^(?:.*)/?$', include('frontend.urls')),
 ]

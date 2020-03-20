@@ -33,6 +33,14 @@ export default class BdcMenu extends Component {
         >
           Upcoming Events
         </Menu.Item>
+        <Menu.Item
+          position='right'
+          name='login'
+          active={activeItem === 'login'}
+          onClick={this.handleItemClick}
+        >
+          Login
+        </Menu.Item>
       </Menu>
     )
   }

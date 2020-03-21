@@ -1,11 +1,8 @@
 from rest_framework import generics
 from rest_framework.response import Response
-from django.conf.urls import include, url
 
 from . import helloworld
 from .serializers import HelloWorldSerializer
-
-api_format = "^tdameritrade/{}$"
 
 class HelloWorldAPI(generics.GenericAPIView):
     serializer_class = HelloWorldSerializer
@@ -25,6 +22,6 @@ class HelloWorldAPI(generics.GenericAPIView):
             "res": helloworld.isPrime(num)
         })
 
-tdameritrade_url_patterns = [
-    url(api_format.format("helloworld"), HelloWorldAPI.as_view()),
+urls = [
+    ("tdameritrade/helloworld", HelloWorldAPI)
 ]

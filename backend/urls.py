@@ -1,10 +1,7 @@
-from django.urls import path
-from django.conf.urls import include, url
-from .apis import users
-from .tdameritrade.apis import tdameritrade_url_patterns
+from django.conf.urls import url
+from .tdameritrade.apis import urls as td_urls
+from .users.apis import urls as user_urls
 
-urlpatterns = [
-    url("^auth/register/$", users.RegistrationAPI.as_view()),
-    url("^auth/login/$", users.LoginAPI.as_view()),
-    url("^auth/user/$", users.UserAPI.as_view()),
-] + tdameritrade_url_patterns
+urls = user_urls + td_urls
+
+urlpatterns = [url("^{}$".format(endpoint), api.as_view()) for (endpoint, api) in urls]

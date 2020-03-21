@@ -6,3 +6,4 @@ class TDUser(models.Model):
     refresh_token = models.CharField(max_length=1000)
     access_token = models.CharField(max_length=1000)
     account_id = models.CharField(max_length=100)
+    client_id = models.CharField(max_length=100)

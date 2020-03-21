@@ -2,11 +2,12 @@ import React, { Component } from 'react'
 import {Link} from 'react-router-dom';
 import BdcContainer from "./BdcContainer";
 import {connect} from 'react-redux';
-import { notes } from '../../actions';
+import { notes, menu } from '../../actions';
 
 class Landing extends Component {
   state = {
     text: "",
+    primeText: "",
     updateNoteId: null,
   }
 
@@ -27,6 +28,11 @@ class Landing extends Component {
       this.props.updateNote(this.state.updateNoteId, this.state.text);
     }
     this.resetForm();
+  }
+
+  submitIsPrime = e => {
+    e.preventDefault();
+    this.props.checkIsPrime(this.state.primeText);
   }
 
   render() {
@@ -56,6 +62,16 @@ class Landing extends Component {
           <button onClick={this.resetForm}>Reset</button>
           <input type="submit" value="Save Note" />
         </form>
+        <br></br>
+        <form onSubmit={this.submitIsPrime}>
+          <input
+            value={this.state.primeText}
+            placeholder="Enter number here..."
+            onChange={(e) => this.setState({ primeText: e.target.value })}
+          />
+          <input type="submit" value="Check ifPrime" />
+        </form>
+        <p>Is prime: {this.props.menu.isPrime.toString()} </p>
       </BdcContainer>
     );
   }
@@ -64,6 +80,7 @@ class Landing extends Component {
 const mapStateToProps = state => {
   return {
     notes: state.notes,
+    menu: state.menu,
   };
 };
 
@@ -78,6 +95,9 @@ const mapDispatchToProps = dispatch => {
     deleteNote: (id) => {
       dispatch(notes.deleteNote(id));
     },
+    checkIsPrime: (num) => {
+      dispatch(menu.checkIsPrime(num));
+    }
   }
 };
 

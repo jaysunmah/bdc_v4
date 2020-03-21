@@ -3,8 +3,8 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 # Create your tests here.
 
 class e2eTest(StaticLiveServerTestCase):
-    def setUpClass(cls):
+    def setUpClass(self):
         super().setUpClass()
 
-    def tearDownClass(cls):
+    def tearDownClass(self):
         super().tearDownClass()

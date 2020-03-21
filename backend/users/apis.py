@@ -1,7 +1,6 @@
 from rest_framework import viewsets, permissions, generics
 from rest_framework.response import Response
-from backend.serializers.users import CreateUserSerializer, UserSerializer, LoginUserSerializer
-
+from .serializers import CreateUserSerializer, UserSerializer, LoginUserSerializer
 from knox.models import AuthToken
 
 class RegistrationAPI(generics.GenericAPIView):
@@ -36,3 +35,9 @@ class UserAPI(generics.RetrieveAPIView):
 
     def get_object(self):
         return self.request.user
+
+urls = [
+    ("auth/register/", RegistrationAPI),
+    ("auth/login/", LoginAPI),
+    ("auth/user/", UserAPI),
+]

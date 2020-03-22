@@ -40,6 +40,7 @@ class TDAccountView extends Component {
                 type="text" id="refresh_token"
                 onChange={e => this.handleEdit({refresh_token: e.target.value })}
                 value={tda.account.refresh_token}
+                size={50}
               />
             </p>
             <p>
@@ -48,6 +49,7 @@ class TDAccountView extends Component {
                 type="text" id="access_token"
                 onChange={e => this.handleEdit({access_token: e.target.value})}
                 value={tda.account.access_token}
+                size={50}
               />
             </p>
             <p>
@@ -56,6 +58,7 @@ class TDAccountView extends Component {
                 type="text" id="account_id"
                 onChange={e => this.handleEdit({account_id: e.target.value})}
                 value={tda.account.account_id}
+                size={50}
               />
             </p>
             <p>
@@ -63,7 +66,8 @@ class TDAccountView extends Component {
               <input
                 type="text" id="client_id"
                 onChange={e => this.handleEdit({client_id: e.target.value})}
-                value={tda.loaded ? tda.account.client_id : ""}
+                value={tda.account.client_id}
+                size={50}
               />
             </p>
             <p>

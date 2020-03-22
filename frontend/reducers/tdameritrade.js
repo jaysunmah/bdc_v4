@@ -6,7 +6,7 @@ const initialState = {
     client_id: ""
   },
   loaded: false,
-  status: ""
+  status: "Loading td account info..."
 }
 
 export default function tdameritrade(state=initialState, action) {

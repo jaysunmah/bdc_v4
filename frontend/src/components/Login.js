@@ -8,7 +8,7 @@ import BdcContainer from "./BdcContainer";
 class Login extends Component {
   state = {
     username: "",
-    "password": ""
+    password: ""
   };
 
   onSubmit = e => {

@@ -1,8 +1,9 @@
-from rest_framework import generics
+from rest_framework import generics, permissions, exceptions
 from rest_framework.response import Response
 
 from . import helloworld
-from .serializers import HelloWorldSerializer
+from .serializers import HelloWorldSerializer, TDAccountAPISerializer, TDAccountSerializer
+from .models import TDAccount
 
 class HelloWorldAPI(generics.GenericAPIView):
     url = "tdameritrade/helloworld/"
@@ -22,3 +23,37 @@ class HelloWorldAPI(generics.GenericAPIView):
         return Response({
             "res": helloworld.isPrime(num)
         })
+
+class LinkTDAccountAPI(generics.GenericAPIView):
+    url = "tdameritrade/account/"
+    serializer_class = TDAccountAPISerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        try:
+            td_account = TDAccount.objects.get(bdc_user=self.request.user)
+            return Response(TDAccountSerializer(td_account).data)
+        except TDAccount.DoesNotExist:
+            return Response({
+                "error": "No TD Account found associated with user"
+            })
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            td_account = TDAccount.objects.get(bdc_user=self.request.user)
+            for key, value in serializer.data.items():
+                setattr(td_account, key, value)
+            td_account.save()
+        except TDAccount.DoesNotExist:
+            td_account = TDAccount(
+                bdc_user=self.request.user,
+                refresh_token=serializer.data['refresh_token'],
+                access_token=serializer.data['access_token'],
+                account_id=serializer.data['account_id'],
+                client_id=serializer.data['client_id']
+            )
+            td_account.save()
+        return Response(TDAccountSerializer(td_account).data)
+

@@ -3,12 +3,12 @@ import { Menu } from 'semantic-ui-react'
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 
-import { auth, menu } from '../../actions';
+import {auth, menu, tdameritrade} from '../../actions';
 
 class BdcMenu extends Component {
   state = {};
-  handleItemClick = (e, { name }) => {
-    this.props.selectItem(name);
+  handleItemClick = (e, { to }) => {
+    this.props.selectItem(to);
   };
 
   componentDidMount() {
@@ -40,8 +40,7 @@ class BdcMenu extends Component {
     return (
         <Menu>
           <Menu.Item
-            name='home'
-            active={this.props.menu.active === 'home'}
+            active={this.props.menu.active === '/'}
             onClick={this.handleItemClick}
             as={Link} to="/"
           >
@@ -49,8 +48,7 @@ class BdcMenu extends Component {
           </Menu.Item>
 
           <Menu.Item
-            name='reviews'
-            active={this.props.menu.active === 'reviews'}
+            active={this.props.menu.active === '/reviews'}
             onClick={this.handleItemClick}
             as={Link} to="/reviews"
           >
@@ -58,12 +56,11 @@ class BdcMenu extends Component {
           </Menu.Item>
 
           <Menu.Item
-            name='people'
-            active={this.props.menu.active === 'people'}
+            active={this.props.menu.active === '/tdameritrade/account'}
             onClick={this.handleItemClick}
-            as={Link} to="/people"
+            as={Link} to="/tdameritrade/account"
           >
-            Upcoming Events
+            TD Account
           </Menu.Item>
 
           {loginLogoutMenuItem}
@@ -87,7 +84,10 @@ const mapDispatchToProps = dispatch => {
     login: (username, password) => {
       return dispatch(auth.login(username, password));
     },
-    logout: () => dispatch(auth.logout()),
+    logout: () => {
+      dispatch(auth.logout());
+      dispatch(tdameritrade.resetTDAccount());
+    },
     selectItem: (item) => {
       return dispatch(menu.selectItem(item))
     }

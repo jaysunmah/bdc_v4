@@ -1,5 +1,5 @@
 const initialState = {
-  active: "home",
+  active: location.pathname,
   isPrime: false,
 }
 

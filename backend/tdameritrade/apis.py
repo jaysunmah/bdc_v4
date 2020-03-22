@@ -30,10 +30,13 @@ class LinkTDAccountAPI(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        td_account = TDAccount.objects.get(bdc_user=self.request.user)
-        if td_account is None:
-            return exceptions.NotFound(detail="No td account was found with user")
-        return Response(TDAccountSerializer(td_account).data)
+        try:
+            td_account = TDAccount.objects.get(bdc_user=self.request.user)
+            return Response(TDAccountSerializer(td_account).data)
+        except TDAccount.DoesNotExist:
+            return Response({
+                "error": "No TD Account found associated with user"
+            })
 
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
@@ -44,7 +47,7 @@ class LinkTDAccountAPI(generics.GenericAPIView):
                 setattr(td_account, key, value)
             td_account.save()
         except TDAccount.DoesNotExist:
-            td_account = TDAccount.objects.update_or_create(
+            td_account = TDAccount(
                 bdc_user=self.request.user,
                 refresh_token=serializer.data['refresh_token'],
                 access_token=serializer.data['access_token'],

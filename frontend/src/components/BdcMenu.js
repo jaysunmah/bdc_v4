@@ -3,7 +3,7 @@ import { Menu } from 'semantic-ui-react'
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 
-import { auth, menu } from '../../actions';
+import {auth, menu, tdameritrade} from '../../actions';
 
 class BdcMenu extends Component {
   state = {};
@@ -84,7 +84,10 @@ const mapDispatchToProps = dispatch => {
     login: (username, password) => {
       return dispatch(auth.login(username, password));
     },
-    logout: () => dispatch(auth.logout()),
+    logout: () => {
+      dispatch(auth.logout());
+      dispatch(tdameritrade.resetTDAccount());
+    },
     selectItem: (item) => {
       return dispatch(menu.selectItem(item))
     }

@@ -1,7 +1,18 @@
 from django.conf.urls import url
-from .tdameritrade.apis import urls as td_urls
-from .users.apis import urls as user_urls
+from .tdameritrade.apis import *
+from .users.apis import *
+import inspect
+import sys
 
-urls = user_urls + td_urls
+def filter_apis(api):
+    return (issubclass(api, generics.GenericAPIView) or
+    issubclass(api, generics.RetrieveAPIView))
 
-urlpatterns = [url("^{}$".format(endpoint), api.as_view()) for (endpoint, api) in urls]
+def get_imported_modules():
+    return [m for _, m in inspect.getmembers(sys.modules[__name__], inspect.isclass)]
+
+def get_urls():
+    return [api for api in get_imported_modules() if filter_apis(api)]
+
+urls = get_urls()
+urlpatterns = [url("^{}$".format(api.url), api.as_view()) for api in get_urls()]

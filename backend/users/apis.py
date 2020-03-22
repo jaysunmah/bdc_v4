@@ -4,6 +4,7 @@ from .serializers import CreateUserSerializer, UserSerializer, LoginUserSerializ
 from knox.models import AuthToken
 
 class RegistrationAPI(generics.GenericAPIView):
+    url = "auth/register/"
     serializer_class = CreateUserSerializer
 
     def post(self, request, *args, **kwargs):
@@ -17,6 +18,7 @@ class RegistrationAPI(generics.GenericAPIView):
         })
 
 class LoginAPI(generics.GenericAPIView):
+    url = "auth/login/"
     serializer_class = LoginUserSerializer
 
     def post(self, request, *args, **kwargs):
@@ -30,14 +32,9 @@ class LoginAPI(generics.GenericAPIView):
         })
 
 class UserAPI(generics.RetrieveAPIView):
+    url = "auth/user/"
     permission_classes = [permissions.IsAuthenticated, ]
     serializer_class = UserSerializer
 
     def get_object(self):
         return self.request.user
-
-urls = [
-    ("auth/register/", RegistrationAPI),
-    ("auth/login/", LoginAPI),
-    ("auth/user/", UserAPI),
-]

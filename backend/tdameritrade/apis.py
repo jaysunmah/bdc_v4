@@ -5,6 +5,7 @@ from . import helloworld
 from .serializers import HelloWorldSerializer
 
 class HelloWorldAPI(generics.GenericAPIView):
+    url = "tdameritrade/helloworld/"
     serializer_class = HelloWorldSerializer
     def get(self, request):
         print(helloworld.helperFn())
@@ -21,7 +22,3 @@ class HelloWorldAPI(generics.GenericAPIView):
         return Response({
             "res": helloworld.isPrime(num)
         })
-
-urls = [
-    ("tdameritrade/helloworld", HelloWorldAPI)
-]

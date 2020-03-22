@@ -4,6 +4,7 @@ import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 
 import {auth, menu, tdameritrade} from '../../actions';
+import Dashboard from "./Dashboard";
 
 class BdcMenu extends Component {
   state = {};
@@ -16,8 +17,6 @@ class BdcMenu extends Component {
   }
 
   render() {
-    const { activeItem } = this.state
-
     let loginLogoutMenuItem = (
       <Menu.Item
         position='right'
@@ -26,45 +25,51 @@ class BdcMenu extends Component {
         Login
       </Menu.Item>
     );
+    let dashboardMenuItem = "";
+
     if (this.props.auth.isAuthenticated) {
       loginLogoutMenuItem = (
         <Menu.Item
           position='right'
-          onClick={this.props.logout}
+          as={Link} to={"/profile"}
+          onClick={this.handleItemClick}
+          active={this.props.menu.active.includes("/profile")}
         >
-          Logout
+          Profile
+        </Menu.Item>
+      );
+      dashboardMenuItem = (
+        <Menu.Item
+          as={Link} to={"/dashboard"}
+          onClick={this.handleItemClick}
+          active={this.props.menu.active === "/dashboard"}
+        >
+          Dashboard
         </Menu.Item>
       );
     }
 
     return (
-        <Menu>
-          <Menu.Item
-            active={this.props.menu.active === '/'}
-            onClick={this.handleItemClick}
-            as={Link} to="/"
-          >
-            Home
-          </Menu.Item>
+      <Menu>
+        <Menu.Item
+          active={this.props.menu.active === '/'}
+          onClick={this.handleItemClick}
+          as={Link} to="/"
+        >
+          Home
+        </Menu.Item>
 
-          <Menu.Item
-            active={this.props.menu.active === '/reviews'}
-            onClick={this.handleItemClick}
-            as={Link} to="/reviews"
-          >
-            Reviews
-          </Menu.Item>
+        <Menu.Item
+          active={this.props.menu.active === '/reviews'}
+          onClick={this.handleItemClick}
+          as={Link} to="/reviews"
+        >
+          Reviews
+        </Menu.Item>
+        {dashboardMenuItem}
 
-          <Menu.Item
-            active={this.props.menu.active === '/tdameritrade/account'}
-            onClick={this.handleItemClick}
-            as={Link} to="/tdameritrade/account"
-          >
-            TD Account
-          </Menu.Item>
-
-          {loginLogoutMenuItem}
-        </Menu>
+        {loginLogoutMenuItem}
+      </Menu>
     )
   }
 }
@@ -80,13 +85,6 @@ const mapDispatchToProps = dispatch => {
   return {
     loadUser: () => {
       return dispatch(auth.loadUser());
-    },
-    login: (username, password) => {
-      return dispatch(auth.login(username, password));
-    },
-    logout: () => {
-      dispatch(auth.logout());
-      dispatch(tdameritrade.resetTDAccount());
     },
     selectItem: (item) => {
       return dispatch(menu.selectItem(item))

@@ -10,8 +10,10 @@ let store = createStore(bdcApp, applyMiddleware(thunk));
 
 import Landing from "./Landing";
 import Login from "./Login";
-import TDAccountView from "./TDAccountView";
+import TDAccountView from "./profile/TDAccountView";
 import NotFound from "./NotFound";
+import Profile from "./profile/Profile";
+import Dashboard from "./Dashboard";
 
 class App extends Component {
   constructor(props) {
@@ -29,7 +31,9 @@ class App extends Component {
           <Switch>
             <Route exact path="/" component={Landing} />
             <Route exact path="/login" component={Login} />
-            <Route exact path="/tdameritrade/account" component={TDAccountView} />
+            <Route exact path="/profile/tdameritrade" component={TDAccountView} />
+            <Route exact path={"/profile"} component={Profile} />
+            <Route exact path={"/dashboard"} component={Dashboard} />
             <Route component={NotFound} />
           </Switch>
         </BrowserRouter>

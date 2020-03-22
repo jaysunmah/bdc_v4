@@ -12,7 +12,7 @@ const initialState = {
 export default function tdameritrade(state=initialState, action) {
   switch(action.type) {
     case 'EDIT_TD_ACCOUNT':
-      return {...state, account: action.account};
+      return {...state, account: action.account, status: "unsaved td account details"};
     case 'LOADED_TD_ACCOUNT':
       return {...state, loaded: true, account: action.account, status: "loaded td account details"};
     case 'UPDATED_TD_ACCOUNT':

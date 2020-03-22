@@ -25,10 +25,10 @@ export const loadTDAccount = () => {
   }
 };
 
-export const upsertTDAccount = (refresh_token, access_token, account_id, client_id) => {
+export const upsertTDAccount = (account) => {
   return (dispatch, getState) => {
     let headers = getHeaderWithAuthToken(getState);
-    let body = JSON.stringify({ refresh_token, access_token, account_id, client_id });
+    let body = JSON.stringify(account);
     dispatch({ type: "UPDATING_TD_ACCOUNT" });
     fetch("/api/tdameritrade/account/", { headers, body, method: "POST" })
       .then(res => {
@@ -48,8 +48,8 @@ export const resetTDAccount = () => {
   }
 }
 
-export const editTDAccount = (refresh_token, access_token, account_id, client_id) => {
+export const editTDAccount = (account) => {
   return (dispatch) => {
-    dispatch({ type: "EDIT_TD_ACCOUNT", account: { refresh_token, access_token, account_id, client_id } });
+    dispatch({ type: "EDIT_TD_ACCOUNT", account });
   }
 }

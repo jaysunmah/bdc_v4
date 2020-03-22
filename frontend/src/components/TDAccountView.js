@@ -19,23 +19,12 @@ class TDAccountView extends Component {
 
   onSubmit = e => {
     e.preventDefault();
-    let tda = this.props.tdameritrade.account;
-    this.props.upsertTDAccount(
-      tda.refresh_token,
-      tda.access_token,
-      tda.account_id,
-      tda.client_id
-    );
+    this.props.upsertTDAccount(this.props.tdameritrade.account);
   }
 
   handleEdit = edit => {
     let tda = {...this.props.tdameritrade.account, ...edit};
-    this.props.editTDAccount(
-      tda.refresh_token,
-      tda.access_token,
-      tda.account_id,
-      tda.client_id
-    );
+    this.props.editTDAccount(tda);
   }
 
   render() {
@@ -97,8 +86,8 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
   return {
     loadTDAccount: () => dispatch(tdameritrade.loadTDAccount()),
-    upsertTDAccount: (refresh_token, access_token, account_id, client_id) => dispatch(tdameritrade.upsertTDAccount(refresh_token, access_token, account_id, client_id)),
-    editTDAccount: (refresh_token, access_token, account_id, client_id) => dispatch(tdameritrade.editTDAccount(refresh_token, access_token, account_id, client_id)),
+    upsertTDAccount: (account) => dispatch(tdameritrade.upsertTDAccount(account)),
+    editTDAccount: (account) => dispatch(tdameritrade.editTDAccount(account)),
   }
 }
 

@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from "react-redux";
 
-import BdcContainer from "./BdcContainer";
-import { tdameritrade } from "../../actions";
+import ProfileContainer from "./ProfileContainer";
+import { tdameritrade } from "../../../actions";
 import {Link} from "react-router-dom";
 
 class TDAccountView extends Component {
@@ -30,7 +30,7 @@ class TDAccountView extends Component {
   render() {
     let tda = this.props.tdameritrade;
     return (
-      <BdcContainer>
+      <ProfileContainer>
         <form onSubmit={this.onSubmit}>
           <fieldset>
             <legend>TD Account</legend>
@@ -40,7 +40,6 @@ class TDAccountView extends Component {
                 type="text" id="refresh_token"
                 onChange={e => this.handleEdit({refresh_token: e.target.value })}
                 value={tda.account.refresh_token}
-                size={50}
               />
             </p>
             <p>
@@ -49,7 +48,6 @@ class TDAccountView extends Component {
                 type="text" id="access_token"
                 onChange={e => this.handleEdit({access_token: e.target.value})}
                 value={tda.account.access_token}
-                size={50}
               />
             </p>
             <p>
@@ -58,7 +56,6 @@ class TDAccountView extends Component {
                 type="text" id="account_id"
                 onChange={e => this.handleEdit({account_id: e.target.value})}
                 value={tda.account.account_id}
-                size={50}
               />
             </p>
             <p>
@@ -67,7 +64,6 @@ class TDAccountView extends Component {
                 type="text" id="client_id"
                 onChange={e => this.handleEdit({client_id: e.target.value})}
                 value={tda.account.client_id}
-                size={50}
               />
             </p>
             <p>
@@ -76,7 +72,7 @@ class TDAccountView extends Component {
             <p>Status: {tda.status}</p>
           </fieldset>
         </form>
-      </BdcContainer>
+      </ProfileContainer>
     );
   }
 }

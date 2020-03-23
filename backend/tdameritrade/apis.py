@@ -33,10 +33,9 @@ class LinkTDAccountAPI(generics.GenericAPIView):
     def get(self, request):
         try:
             td_account = TDAccount.objects.get(bdc_user=self.request.user)
-            td_client = TDAClient(td_account)
-            res = td_client.get_positions()
-            print(res)
-
+            # td_client = TDAClient(td_account)
+            # res = td_client.get_positions()
+            # print(res)
             return Response(TDAccountSerializer(td_account).data)
         except TDAccount.DoesNotExist:
             return Response({

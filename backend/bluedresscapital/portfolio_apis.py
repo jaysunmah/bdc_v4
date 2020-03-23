@@ -19,7 +19,10 @@ class PortfolioAPI(generics.GenericAPIView):
 
     def get(self, request):
         portfolios = get_portfolios(request, self.request.user)
-        return Response(PortfolioSerializer(portfolios, many=True).data)
+        port_dict = {}
+        for portfolio in portfolios:
+            port_dict[portfolio.id] = PortfolioSerializer(portfolio).data
+        return Response(port_dict)
 
     # Posts to this endpoint will upsert the portfolio
     # Endpoint is idempotent

@@ -21,10 +21,7 @@ class PositionAPI(generics.GenericAPIView):
         for portfolio in portfolios:
             id_port_map[portfolio.id] = PortfolioSerializer(portfolio).data
 
-        return Response({
-            'positions': PositionSerializer(positions, many=True).data,
-            'portfolios': id_port_map
-        })
+        return Response(PositionSerializer(positions, many=True).data)
 
     # Posts to this endpoint will cause a mass update to all positions at brokerage
     # Endpoint is idempotent assuming no changes were made to the underlying positions

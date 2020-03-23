@@ -18,4 +18,5 @@ def get_urls():
     return [api for api in get_imported_modules() if filter_apis(api)]
 
 urls = get_urls()
+print(urls)
 urlpatterns = [url("^{}$".format(api.url), api.as_view()) for api in get_urls()]

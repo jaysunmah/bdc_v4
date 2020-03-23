@@ -5,7 +5,7 @@ from .models import RHAccount
 from .serializers import RHAccountSerializer, RHAccountAPISerializer
 from .rhscraper import RHClient
 
-class LinkTDAccountAPI(generics.GenericAPIView):
+class LinkRHAccountAPI(generics.GenericAPIView):
     url = "robinhood/account/"
     serializer_class = RHAccountAPISerializer
     permission_classes = [permissions.IsAuthenticated]

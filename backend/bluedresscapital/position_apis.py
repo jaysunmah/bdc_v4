@@ -1,7 +1,7 @@
 from rest_framework import generics
 from rest_framework.response import Response
 
-from .serializers import PositionSerializer, PositionUpsertSerializer
+from .serializers import PositionSerializer, PositionUpsertSerializer, PortfolioSerializer
 from .models import Position, Portfolio
 from .portfolio_apis import get_portfolios
 from .brokerage_apis import get_brokerage
@@ -16,7 +16,15 @@ class PositionAPI(generics.GenericAPIView):
     def get(self, request):
         portfolios = get_portfolios(request, self.request.user)
         positions = Position.objects.filter(portfolio__in=portfolios)
-        return Response(PositionSerializer(positions, many=True).data)
+
+        id_port_map = {}
+        for portfolio in portfolios:
+            id_port_map[portfolio.id] = PortfolioSerializer(portfolio).data
+
+        return Response({
+            'positions': PositionSerializer(positions, many=True).data,
+            'portfolios': id_port_map
+        })
 
     # Posts to this endpoint will cause a mass update to all positions at brokerage
     # Endpoint is idempotent assuming no changes were made to the underlying positions

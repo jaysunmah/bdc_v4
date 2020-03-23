@@ -8,6 +8,9 @@ class Brokerage(models.Model):
     def is_tda(self):
         return self.name == "tda"
 
+    def is_rh(self):
+        return self.name == "rh"
+
 class Stock(models.Model):
     ticker = models.CharField(max_length=10, primary_key=True)
     name = models.CharField(max_length=100)

@@ -2,6 +2,8 @@ from django.conf.urls import url
 from .tdameritrade.apis import *
 from .users.apis import *
 from .bluedresscapital.apis import *
+from .robinhood.apis import *
+
 import inspect
 import sys
 

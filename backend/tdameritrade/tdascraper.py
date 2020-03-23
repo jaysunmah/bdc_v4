@@ -1,3 +1,5 @@
+import datetime
+
 import requests
 from .models import TDAccount
 
@@ -22,6 +24,9 @@ class TDAClient:
 
 	def get_validate_url(self):
 		return "https://auth.tdameritrade.com/auth?response_type=code&redirect_uri={}&client_id={}%40AMER.OAUTHAP".format(self.redirect_uri, self.client_id)
+
+	def get_td_quote_url(self, symbol):
+		return "https://api.tdameritrade.com/v1/marketdata/{}/pricehistory".format(symbol)
 
 	def write_tokens_to_db(self):
 		self.td_account.access_token = self.access_token
@@ -77,21 +82,25 @@ class TDAClient:
 			print(trade)
 		return res
 
-# def get_historical_quote(self, symbol):
-# 	def get_historical_quote_data(symbol):
-# 		url = td_urls.TD_QUOTE_URL_1 + symbol + td_urls.TD_QUOTE_URL_2
-# 		return requests.get(url, params={'periodType': 'year',
-# 			'period': 1,
-# 			'frequency': 1,
-# 			'frequencyType' : 'daily',
-# 			'startDate': int(startDate.timestamp() * 1000),
-# 			'endDate': int(endDate.timestamp() * 1000)},
-# 			headers={'Authorization': 'Bearer ' + self.access_token}).json()
-# 	try:
-# 		return get_historical_quote(symbol)
-# 	except:
-# 		self.authenticate()
-# 		return get_historical_quote(symbol)
+	def get_historical_quote(self, ticker: str, start: datetime.datetime, end: datetime.datetime):
+		url = self.get_td_quote_url(ticker)
+		params = {
+			'periodType': 'year',
+			'period': 1,
+			'frequency': 1,
+			'frequencyType': 'daily',
+			'startDate': int(start.timestamp()) * 1000,
+			'endDate': int(end.timestamp()) * 1000
+		}
+		res = requests.get(url, params=params, headers=self.get_auth_header()).json()
+		if has_expired_access_token(res):
+			self.authenticate()
+			res = requests.get(url, params=params, headers=self.get_auth_header()).json()
+
+		return [{
+			'close': float(quote['close']),
+			'date': datetime.datetime.fromtimestamp(quote['datetime'] / 1000)
+		} for quote in res['candles']]
 #
 # def get_historical_quotes_from_trades(self, trades):
 # 	for x in trades:

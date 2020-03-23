@@ -30,7 +30,8 @@ class Portfolio(models.Model):
 
 class Position(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
-    quantity = models.IntegerField()
+    # Make quantity a decimal so we can support fractional shares if we're truly wild
+    quantity = models.DecimalField(decimal_places=4, max_digits=10)
     value = models.DecimalField(decimal_places=4, max_digits=10)
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
 
@@ -40,3 +41,13 @@ class Position(models.Model):
             models.UniqueConstraint(fields=['portfolio', 'stock'], name='portfolio__stock__unique')
         ]
 
+class StockQuote(models.Model):
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
+    price = models.DecimalField(decimal_places=4, max_digits=10)
+    date = models.DateField()
+
+    class Meta:
+        # For each stock quote, there should only be one price per (stock, date)
+        constraints = [
+            models.UniqueConstraint(fields=['stock', 'date'], name='stock__date__unique')
+        ]

@@ -2,9 +2,8 @@ from rest_framework import generics
 from rest_framework.response import Response
 
 from .serializers import PositionSerializer, PositionUpsertSerializer, PortfolioSerializer
-from .models import Position, Portfolio, Stock
+from .models import Position, Portfolio, Stock, Brokerage
 from .portfolio_apis import get_portfolios
-from .brokerage_apis import get_brokerage
 from backend.tdameritrade.models import TDAccount
 from backend.tdameritrade.tdascraper import TDAClient
 from backend.tdameritrade.util.helpers import upsert_positions as upsert_td_positions
@@ -20,10 +19,6 @@ class PositionAPI(generics.GenericAPIView):
         portfolios = get_portfolios(request, self.request.user)
         positions = Position.objects.filter(portfolio__in=portfolios)
 
-        id_port_map = {}
-        for portfolio in portfolios:
-            id_port_map[portfolio.id] = PortfolioSerializer(portfolio).data
-
         return Response(PositionSerializer(positions, many=True).data)
 
     # Posts to this endpoint will cause a mass update to all positions at brokerage
@@ -32,7 +27,7 @@ class PositionAPI(generics.GenericAPIView):
     def post(self, request) -> Response:
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        brokerage = get_brokerage(serializer.data['brokerage'])
+        brokerage = Brokerage.objects.get(name=serializer.data['brokerage'])
         portfolio = Portfolio.objects.get(bdc_user=self.request.user, brokerage=brokerage)
 
         if brokerage.is_tda():

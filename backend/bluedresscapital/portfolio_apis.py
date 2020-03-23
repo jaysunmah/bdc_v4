@@ -2,12 +2,11 @@ from rest_framework import generics
 from rest_framework.response import Response
 
 from .serializers import PortfolioSerializer, PortfolioUpsertSerializer
-from .models import Portfolio
-from .brokerage_apis import get_brokerage
+from .models import Portfolio, Brokerage
 
 def get_portfolios(request, user):
     if 'brokerage' in request.GET:
-        brokerage = get_brokerage(request.GET['brokerage']) if 'brokerage' in request.GET else None
+        brokerage = Brokerage.objects.get(name=request.GET['brokerage'])
         portfolios = Portfolio.objects.filter(bdc_user=user, brokerage=brokerage)
     else:
         portfolios = Portfolio.objects.filter(bdc_user=user)
@@ -29,13 +28,11 @@ class PortfolioAPI(generics.GenericAPIView):
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        brokerage = get_brokerage(serializer.data['brokerage'])
-
+        brokerage = Brokerage.objects.get(name=serializer.data['brokerage'])
         try:
             portfolio = Portfolio.objects.get(bdc_user=self.request.user, brokerage=brokerage)
             portfolio.nickname = serializer.data['nickname']
         except Portfolio.DoesNotExist:
             portfolio = Portfolio(bdc_user=self.request.user, nickname=serializer.data['nickname'], brokerage=brokerage)
         portfolio.save()
-
         return Response(PortfolioSerializer(portfolio).data)

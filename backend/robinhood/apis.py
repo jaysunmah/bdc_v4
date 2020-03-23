@@ -3,7 +3,6 @@ from rest_framework.response import Response
 
 from .models import RHAccount
 from .serializers import RHAccountSerializer, RHAccountAPISerializer
-from .rhscraper import RHClient
 
 class LinkRHAccountAPI(generics.GenericAPIView):
     url = "robinhood/account/"
@@ -13,10 +12,6 @@ class LinkRHAccountAPI(generics.GenericAPIView):
     def get(self, request):
         try:
             rh_account = RHAccount.objects.get(bdc_user=self.request.user)
-
-            rh_client = RHClient(rh_account)
-            rh_client.get_positions()
-
             return Response(RHAccountSerializer(rh_account).data)
         except RHAccount.DoesNotExist:
             return Response({

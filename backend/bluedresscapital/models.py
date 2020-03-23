@@ -3,7 +3,10 @@ from django.contrib.auth.models import User
 
 # Use brokerage to figure out which set of apis to use
 class Brokerage(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, primary_key=True)
+
+    def is_tda(self):
+        return self.name == "tda"
 
 class Stock(models.Model):
     ticker = models.CharField(max_length=10, primary_key=True)
@@ -25,6 +28,7 @@ class Portfolio(models.Model):
 class Position(models.Model):
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
     quantity = models.IntegerField()
+    value = models.DecimalField(decimal_places=4, max_digits=10)
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
 
     class Meta:

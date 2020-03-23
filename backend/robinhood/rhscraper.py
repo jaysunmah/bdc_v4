@@ -58,4 +58,4 @@ def get_stock_from_instrument_id(instrument_id):
 def get_stock_from_symbol(symbol):
     url = "https://api.robinhood.com/instruments/?symbol={}".format(symbol)
     resp = requests.get(url).json()
-    print(resp)
+    return resp['results'][0]['simple_name']

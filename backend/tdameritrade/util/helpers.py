@@ -25,7 +25,7 @@ def upsert_orders(td_client: TDAClient, portfolio: Portfolio) -> Response:
             quantity=t['quantity'],
             value=t['value'],
             is_buy_type=t['instruction'] == 'BUY',
-            date=datetime.date.fromisoformat(t['date'].split("T")[0]))
+            date=datetime.datetime.strptime(t['date'], "%Y-%m-%dT%H:%M:%S%z"))
     orders = [get_order(t) for t in transactions]
     Order.objects.bulk_create(orders, ignore_conflicts=True)
     return Response(OrderSerializer(orders, many=True).data)

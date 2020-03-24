@@ -74,4 +74,4 @@ class Order(models.Model):
     value = models.DecimalField(decimal_places=4, max_digits=10)
     # Assume an order type can only be buy or sell
     is_buy_type = models.BooleanField()
-    date = models.DateField()
+    date = models.DateTimeField()

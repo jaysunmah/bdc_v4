@@ -6,6 +6,9 @@ from .models import Portfolio, Brokerage, Order
 from backend.tdameritrade.util.helpers import upsert_orders as upsert_tda_orders
 from backend.tdameritrade.models import TDAccount
 from backend.tdameritrade.tdascraper import TDAClient
+from backend.robinhood.util.helpers import upsert_orders as upsert_rh_orders
+from backend.robinhood.models import RHAccount
+from backend.robinhood.rhscraper import RHClient
 
 class OrdersAPI(generics.GenericAPIView):
     url = "bdc/orders/"
@@ -17,11 +20,12 @@ class OrdersAPI(generics.GenericAPIView):
         :param request:
         :return:
         """
-        if 'brokerage' not in request.GET:
-            return Response({"error": "brokerage required in url parameter"})
-        brokerage = Brokerage.objects.get(name=request.GET['brokerage'])
-        portfolio = Portfolio.objects.get(bdc_user=self.request.user, brokerage=brokerage)
-        orders = Order.objects.filter(portfolio=portfolio).order_by('date')
+        if 'brokerage' in request.GET:
+            brokerage = Brokerage.objects.get(name=request.GET['brokerage'])
+            portfolios = Portfolio.objects.filter(bdc_user=self.request.user, brokerage=brokerage)
+        else:
+            portfolios = Portfolio.objects.filter(bdc_user=self.request.user)
+        orders = Order.objects.filter(portfolio__in=portfolios).order_by('date')
         return Response(OrderSerializer(orders, many=True).data)
 
     def post(self, request):
@@ -36,7 +40,8 @@ class OrdersAPI(generics.GenericAPIView):
         portfolio = Portfolio.objects.get(bdc_user=self.request.user, brokerage=brokerage)
 
         if brokerage.is_rh():
-            return Response({"status": "TODO RH"})
+            rh_account = RHAccount.objects.get(bdc_user=self.request.user)
+            return upsert_rh_orders(RHClient(rh_account), portfolio)
         elif brokerage.is_tda():
             td_account = TDAccount.objects.get(bdc_user=self.request.user)
             return upsert_tda_orders(TDAClient(td_account), portfolio)

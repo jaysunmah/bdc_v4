@@ -31,12 +31,25 @@ class RHClient:
         return positions
 
     def get_orders(self):
-        orders = self.rh.order_history()
-        print(orders['results'])
-        print(orders['next'])
-        print(orders['previous'])
+        response = self.rh.session.get(endpoints.orders()).json()
+        res = response['results']
+        while response['next'] is not None:
+            response = self.rh.session.get(response['next']).json()
+            res += response['results']
 
-        return ""
+        def filter_order(order):
+            return len(order['executions']) > 0
+        def get_order(order):
+            execution = order['executions'][0]
+            return {
+                'uid': order['id'],
+                'instruction': order['side'],
+                'date': execution['timestamp'],
+                'stock': get_stock_from_instrument_id(get_instrument_id_from_url(order['instrument'])),
+                'quantity': Decimal(execution['quantity']),
+                'value': Decimal(execution['price'])
+            }
+        return [get_order(order) for order in res if filter_order(order)]
 
 def get_latest_stock_price(ticker):
     try:

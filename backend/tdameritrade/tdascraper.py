@@ -73,11 +73,6 @@ class TDAClient:
 		self.authenticate()
 		url = self.get_transactions_url()
 		res = requests.get(url, headers=self.get_auth_header()).json()
-		for t in res:
-			print("=====")
-			print(t)
-			print("=====")
-
 		def get_trade(t):
 			return {
 				'uid': t['transactionId'],
@@ -106,11 +101,3 @@ class TDAClient:
 			'close': float(quote['close']),
 			'date': datetime.datetime.fromtimestamp(quote['datetime'] / 1000)
 		} for quote in res['candles']]
-#
-# def get_historical_quotes_from_trades(self, trades):
-# 	for x in trades:
-# 		d = {}
-# 		if x.name == 'StockTrade' and x.symbol not in d:
-# 			d[x.symbol] = get_historical_quote(x.symbol)
-# 	pickle.dump(d, open('quotes_pickle.pickle', 'wb'))
-# 	return d

@@ -1,9 +1,29 @@
 import React, {Component} from "react";
+import Avatar from '@material-ui/core/Avatar';
+import Button from '@material-ui/core/Button';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import TextField from '@material-ui/core/TextField';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Checkbox from '@material-ui/core/Checkbox';
+import Grid from '@material-ui/core/Grid';
+import Box from '@material-ui/core/Box';
+import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
+import Typography from '@material-ui/core/Typography';
+import { makeStyles } from '@material-ui/core/styles';
+import Container from '@material-ui/core/Container';
 import {Link, Redirect} from "react-router-dom";
 import {auth} from '../../actions';
 import {connect} from "react-redux";
 
 import BdcContainer from "./BdcContainer";
+
+const classes = makeStyles((theme) => ({
+  paper: {
+    marginTop: theme.spacing(8),
+    flexDirection: 'column',
+    alignItems: 'center',
+  }
+}));
 
 class Login extends Component {
   state = {
@@ -29,35 +49,56 @@ class Login extends Component {
     }
 
     return (
-      <BdcContainer>
-        <form onSubmit={this.onSubmit}>
-          <fieldset>
-            <legend>Login</legend>
-            <p>
-              <label htmlFor="username">Username</label>
-              <input
-                type="text" id="username"
-                onChange={e => this.setState({username: e.target.value})} />
-            </p>
-            <p>
-              <label htmlFor="password">Password</label>
-              <input
-                type="password" id="password"
-                onChange={e => this.setState({password: e.target.value})} />
-            </p>
-            <p>
-              <button type="submit">Login</button>
-            </p>
-            {errors}
-
-            <p>
-              Don't have an account? <Link to="/register">Register</Link>
-            </p>
-          </fieldset>
-        </form>
-      </BdcContainer>
-    );
-  }
+    <BdcContainer>
+      <Container component="main" maxWidth="xs">
+        <CssBaseline />
+          <div className={classes.paper}>
+          <div align="center">
+            <Avatar>
+              <LockOutlinedIcon />
+            </Avatar>
+            <Typography component="h1" variant="h5">
+              Sign in
+            </Typography>
+          </div>
+          <form noValidate onSubmit={this.onSubmit}>
+            <TextField
+              variant="outlined"
+              margin="normal"
+              required
+              fullWidth
+              id="username"
+              label="Username"
+              name="username"
+              autoComplete="username"
+              autoFocus
+              onChange={e => this.setState({username: e.target.value})} />
+            <TextField
+              variant="outlined"
+              margin="normal"
+              required
+              fullWidth
+              name="password"
+              label="Password"
+              type="password"
+              id="password"
+              autoComplete="current-password"
+              onChange={e => this.setState({password: e.target.value})} />
+            <FormControlLabel
+              control={<Checkbox value="remember" color="primary" />}
+              label="Remember me"/>
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              color="primary">
+              Sign In
+            </Button>
+          </form>
+        </div>
+      </Container>
+    </BdcContainer>
+  );}
 }
 
 const mapStateToProps = state => {

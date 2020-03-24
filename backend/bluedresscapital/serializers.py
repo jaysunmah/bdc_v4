@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Portfolio, Position, Stock, StockQuote
+from .models import Portfolio, Position, Stock, StockQuote, Order
 
 class PortfolioSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,7 +26,6 @@ class StockSerializer(serializers.ModelSerializer):
 class StockUpsertSerializer(serializers.Serializer):
     ticker = serializers.CharField()
 
-
 class StockQuoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = StockQuote
@@ -38,4 +37,12 @@ class StockQuoteUpsertSerializer(serializers.Serializer):
     end_date = serializers.DateField()
 
 class UpdatePositionStockPricesSerializer(serializers.Serializer):
+    brokerage = serializers.CharField()
+
+class OrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ('uid', 'portfolio', 'stock', 'quantity', 'value', 'is_buy_type', 'date')
+
+class OrderUpsertSerializer(serializers.Serializer):
     brokerage = serializers.CharField()

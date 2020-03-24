@@ -1,4 +1,5 @@
 import datetime
+from decimal import Decimal
 
 import requests
 from .models import TDAccount
@@ -72,10 +73,16 @@ class TDAClient:
 		self.authenticate()
 		url = self.get_transactions_url()
 		res = requests.get(url, headers=self.get_auth_header()).json()
-		trades = [t for t in res if t['type'] == 'TRADE']
-		for trade in trades:
-			print(trade)
-		return res
+		def get_trade(t):
+			return {
+				'uid': t['transactionId'],
+				'instruction': t['transactionItem']['instruction'],
+				'date': t['orderDate'] if 'orderDate' in t else t['transactionDate'],
+				'stock': t['transactionItem']['instrument']['symbol'],
+				'quantity': Decimal(t['transactionItem']['amount']),
+				'value': Decimal(t['transactionItem']['price'])
+			}
+		return [get_trade(t) for t in res if t['type'] == 'TRADE']
 
 	def get_historical_quote(self, ticker: str, start: datetime.datetime, end: datetime.datetime):
 		self.authenticate()

@@ -1,3 +1,4 @@
+import history from '../src/components/history';
 export const loadUser = () => {
   return (dispatch, getState) => {
     dispatch({type: "USER_LOADING"});
@@ -89,6 +90,7 @@ export const logout = () => {
       .then(res => {
         if (res.status === 204) {
           dispatch({type: 'LOGOUT_SUCCESSFUL'});
+          history.push('/login');
           return res.data;
         } else if (res.status === 403 || res.status === 401) {
           dispatch({type: "AUTHENTICATION_ERROR", data: res.data});

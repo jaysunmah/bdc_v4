@@ -15,6 +15,7 @@ import TDAccountView from "./profile/TDAccountView";
 import NotFound from "./NotFound";
 import Profile from "./profile/Profile";
 import Dashboard from "./Dashboard";
+import Register from "./Register";
 
 class App extends Component {
   constructor(props) {
@@ -35,6 +36,7 @@ class App extends Component {
             <Route exact path="/profile/tdameritrade" component={TDAccountView} />
             <Route exact path={"/profile"} component={Profile} />
             <Route exact path={"/dashboard"} component={Dashboard} />
+            <Route exact path={"/register"} component={Register} />
             <Route component={NotFound} />
           </Switch>
         </Router>

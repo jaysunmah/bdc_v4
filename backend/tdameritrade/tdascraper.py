@@ -73,6 +73,11 @@ class TDAClient:
 		self.authenticate()
 		url = self.get_transactions_url()
 		res = requests.get(url, headers=self.get_auth_header()).json()
+		for t in res:
+			print("=====")
+			print(t)
+			print("=====")
+
 		def get_trade(t):
 			return {
 				'uid': t['transactionId'],

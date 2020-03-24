@@ -63,3 +63,15 @@ class StockQuote(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['stock', 'date'], name='stock__date__unique')
         ]
+
+class Order(models.Model):
+    # Have a generic uid field so we can make each order id unique
+    uid = models.CharField(max_length=100, primary_key=True)
+    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
+    # Make quantity a decimal so we can support fractional shares if we're truly wild
+    quantity = models.DecimalField(decimal_places=4, max_digits=10)
+    value = models.DecimalField(decimal_places=4, max_digits=10)
+    # Assume an order type can only be buy or sell
+    is_buy_type = models.BooleanField()
+    date = models.DateField()

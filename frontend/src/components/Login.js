@@ -44,7 +44,7 @@ class Login extends Component {
     let errors = null;
     if (this.props.errors.length > 0) {
       errors = this.props.errors.map((e, i) => {
-        return <li key={i}>{e.message}</li>
+        return <font color="red" key={i}>{e.message}</font>
       });
     }
 
@@ -84,6 +84,7 @@ class Login extends Component {
               id="password"
               autoComplete="current-password"
               onChange={e => this.setState({password: e.target.value})} />
+              {errors}
             <Button
               type="submit"
               fullWidth

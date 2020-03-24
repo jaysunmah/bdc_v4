@@ -1,7 +1,12 @@
+import datetime
+
 from django.db import models
 from django.contrib.auth.models import User
 
-# Use brokerage to figure out which set of apis to use
+def save_quotes_ignore_exists(quotes, stock):
+    stock_quotes = [StockQuote(stock=stock, date=quote['date'], price=quote['close']) for quote in quotes]
+    StockQuote.objects.bulk_create(stock_quotes, batch_size=1000, ignore_conflicts=True)
+
 class Brokerage(models.Model):
     name = models.CharField(max_length=100, primary_key=True)
 
@@ -14,6 +19,13 @@ class Brokerage(models.Model):
 class Stock(models.Model):
     ticker = models.CharField(max_length=10, primary_key=True)
     name = models.CharField(max_length=100)
+
+    def update_price(self, td_client):
+        start = datetime.datetime.now() - datetime.timedelta(days=1)
+        end = datetime.datetime.now() + datetime.timedelta(days=1)
+        quotes = td_client.get_historical_quote(self.ticker, start, end)
+        save_quotes_ignore_exists(quotes, self)
+        return
 
 class Portfolio(models.Model):
     # Assume one bdc_v4 user can have multiple portfolios

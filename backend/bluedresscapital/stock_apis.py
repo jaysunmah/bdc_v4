@@ -3,6 +3,7 @@ import datetime
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 
+from backend.bluedresscapital.models import save_quotes_ignore_exists
 from .serializers import StockUpsertSerializer, StockQuoteUpsertSerializer, StockQuoteSerializer
 from .models import StockQuote, Stock
 from backend.tdameritrade.tdascraper import TDAClient
@@ -73,15 +74,8 @@ class StockQuoteAPI(generics.GenericAPIView):
         td_account = TDAccount.objects.get(bdc_user=self.request.user)
         td_client = TDAClient(td_account)
         quotes = td_client.get_historical_quote(ticker, datetime.datetime.strptime(start, "%Y-%m-%d"), datetime.datetime.strptime(end, "%Y-%m-%d"))
-
         stock = Stock.objects.get(ticker=ticker)
-        for quote in quotes:
-            try:
-                stock_quote = StockQuote.objects.get(stock=stock, date=quote['date'])
-                stock_quote.price = quote['close']
-            except StockQuote.DoesNotExist:
-                stock_quote = StockQuote(stock=stock, date=quote['date'], price=quote['close'])
-            stock_quote.save()
-
+        save_quotes_ignore_exists(quotes, stock)
         stock_quotes = StockQuote.objects.filter(stock=stock, date__gte=start, date__lte=end)
         return Response(StockQuoteSerializer(stock_quotes, many=True).data)
+

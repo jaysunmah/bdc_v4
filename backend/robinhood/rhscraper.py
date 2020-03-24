@@ -1,7 +1,10 @@
+from decimal import Decimal
+
 from pyrh import Robinhood, endpoints
 import requests
 from .models import RHAccount, Instrument
-from backend.bluedresscapital.models import Stock
+from backend.bluedresscapital.models import Stock, StockQuote
+
 
 class RHClient:
     def __init__(self, rh_account: RHAccount):
@@ -16,11 +19,14 @@ class RHClient:
             response = self.rh.session.get(response['next']).json()
             res += response['results']
 
-        positions = [{
-            'symbol': get_stock_from_instrument_id(get_instrument_id_from_url(position['instrument'])),
-            'quantity': float(position['quantity']),
-            'value': float(position['quantity']) * get_latest_stock_price()
-        } for position in res]
+        def get_position(position):
+            stock = get_stock_from_instrument_id(get_instrument_id_from_url(position['instrument']))
+            return {
+                'symbol': stock,
+                'quantity': Decimal(position['quantity']),
+                'value': Decimal(position['quantity']) * get_latest_stock_price(stock)
+            }
+        positions = [get_position(position) for position in res]
 
         return positions
 
@@ -32,9 +38,17 @@ class RHClient:
 
         return ""
 
-def get_latest_stock_price():
-    # TODO
-    return 42
+def get_latest_stock_price(ticker):
+    try:
+        stock = Stock.objects.get(ticker=ticker)
+    except Stock.DoesNotExist:
+        stock = Stock(ticker=ticker, name=get_stock_from_symbol(ticker))
+        stock.save()
+    quote_query = StockQuote.objects.filter(stock=stock).order_by('-date')
+    if quote_query.exists():
+        return quote_query.first().price
+    # TODO(ma): maybe we should fetch stock price live here??
+    return Decimal(0)
 
 def get_instrument_id_from_url(url):
     return url.replace('https://api.robinhood.com/instruments/', '')[:-1]

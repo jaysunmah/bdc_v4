@@ -36,3 +36,6 @@ class StockQuoteUpsertSerializer(serializers.Serializer):
     ticker = serializers.CharField()
     start_date = serializers.DateField()
     end_date = serializers.DateField()
+
+class UpdatePositionStockPricesSerializer(serializers.Serializer):
+    brokerage = serializers.CharField()

@@ -34,7 +34,6 @@ class TDAClient:
 		self.td_account.save()
 
 	def authenticate(self):
-		print("Re-authenticating tokens")
 		url = 'https://api.tdameritrade.com/v1/oauth2/token'
 		data = {
 			'grant_type': 'refresh_token',
@@ -54,11 +53,9 @@ class TDAClient:
 		}
 
 	def get_positions(self):
+		self.authenticate()
 		url = self.get_accounts_url()
 		res = requests.get(url, params={'fields': 'positions'}, headers=self.get_auth_header()).json()
-		if has_expired_access_token(res):
-			self.authenticate()
-			res = requests.get(url, params={'fields': 'positions'}, headers=self.get_auth_header()).json()
 		positions = res['securitiesAccount']['positions']
 		cash = float(res['securitiesAccount']['currentBalances']['cashBalance'])
 		positions = [
@@ -72,17 +69,16 @@ class TDAClient:
 		return positions
 
 	def get_transactions(self):
+		self.authenticate()
 		url = self.get_transactions_url()
 		res = requests.get(url, headers=self.get_auth_header()).json()
-		if has_expired_access_token(res):
-			self.authenticate()
-			res = requests.get(url, headers=self.get_auth_header()).json()
 		trades = [t for t in res if t['type'] == 'TRADE']
 		for trade in trades:
 			print(trade)
 		return res
 
 	def get_historical_quote(self, ticker: str, start: datetime.datetime, end: datetime.datetime):
+		self.authenticate()
 		url = self.get_td_quote_url(ticker)
 		params = {
 			'periodType': 'year',
@@ -93,9 +89,6 @@ class TDAClient:
 			'endDate': int(end.timestamp()) * 1000
 		}
 		res = requests.get(url, params=params, headers=self.get_auth_header()).json()
-		if has_expired_access_token(res):
-			self.authenticate()
-			res = requests.get(url, params=params, headers=self.get_auth_header()).json()
 
 		return [{
 			'close': float(quote['close']),

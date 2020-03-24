@@ -84,9 +84,6 @@ class Login extends Component {
               id="password"
               autoComplete="current-password"
               onChange={e => this.setState({password: e.target.value})} />
-            <FormControlLabel
-              control={<Checkbox value="remember" color="primary" />}
-              label="Remember me"/>
             <Button
               type="submit"
               fullWidth

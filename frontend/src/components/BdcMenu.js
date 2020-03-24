@@ -1,10 +1,10 @@
 import React, { Component } from 'react'
-import { Menu } from 'semantic-ui-react'
+import { Menu, Dropdown } from 'semantic-ui-react'
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
-
 import {auth, menu, tdameritrade} from '../../actions';
 import Dashboard from "./Dashboard";
+
 
 class BdcMenu extends Component {
   state = {};
@@ -29,14 +29,23 @@ class BdcMenu extends Component {
 
     if (this.props.auth.isAuthenticated) {
       loginLogoutMenuItem = (
-        <Menu.Item
-          position='right'
-          as={Link} to={"/profile"}
-          onClick={this.handleItemClick}
-          active={this.props.menu.active.includes("/profile")}
-        >
-          Profile
-        </Menu.Item>
+        <Menu.Menu position='right'>
+        <Dropdown item icon='user' simple>
+        <Dropdown.Menu>
+          <Dropdown.Item
+            as={Link} to={"/profile"}
+            onClick={this.handleItemClick}
+            active={this.props.menu.active.includes("/profile")}>
+            Profile
+          </Dropdown.Item>
+          <Dropdown.Item
+            onClick={() => this.props.logout()}
+            >
+            Logout
+          </Dropdown.Item>
+        </Dropdown.Menu>
+      </Dropdown>
+      </Menu.Menu>
       );
       dashboardMenuItem = (
         <Menu.Item
@@ -88,6 +97,9 @@ const mapDispatchToProps = dispatch => {
     },
     selectItem: (item) => {
       return dispatch(menu.selectItem(item))
+    },
+    logout: () => {
+      return dispatch(auth.logout());
     }
   }
 }

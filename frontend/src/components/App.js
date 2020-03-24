@@ -2,8 +2,9 @@ import React, { Component } from "react";
 import { render } from "react-dom";
 import {applyMiddleware, createStore} from "redux";
 import { Provider } from "react-redux";
-import {Route, Switch, BrowserRouter} from 'react-router-dom';
+import {Route, Switch, Router} from 'react-router-dom';
 import thunk from "redux-thunk";
+import history from './history';
 
 import bdcApp from "../../reducers";
 let store = createStore(bdcApp, applyMiddleware(thunk));
@@ -27,7 +28,7 @@ class App extends Component {
   render() {
     return (
       <Provider store={store}>
-        <BrowserRouter>
+        <Router history={history}>
           <Switch>
             <Route exact path="/" component={Landing} />
             <Route exact path="/login" component={Login} />
@@ -36,7 +37,7 @@ class App extends Component {
             <Route exact path={"/dashboard"} component={Dashboard} />
             <Route component={NotFound} />
           </Switch>
-        </BrowserRouter>
+        </Router>
       </Provider>
     );
   }

@@ -16,7 +16,7 @@ export const loadAllPortfolios = () => {
         if (data.error) {
           dispatch({ type: "ERROR", error_message: data.error });
         } else {
-          dispatch({ type: "LOADED_PORTFOLIOS", account: data });
+          dispatch({ type: "LOADED_PORTFOLIOS", portfolios: data });
         }
       })
       .catch(e => {
@@ -24,3 +24,26 @@ export const loadAllPortfolios = () => {
       });
   }
 };
+
+export const loadAllPositions = () => {
+  return (dispatch, getState) => {
+    let headers = getHeaderWithAuthToken(getState);
+    fetch("/api/bdc/positions/", { headers, method: "GET" })
+      .then(res => {
+        if (res.status === 200) {
+          return res.json()
+        }
+        throw "Internal server error in getting account positions"
+      })
+      .then(data => {
+        if (data.error) {
+          dispatch({ type: "ERROR", error_message: data.error });
+        } else {
+          dispatch({ type: "LOADED_POSITIONS", positions: data })
+        }
+      })
+      .catch(e => {
+        dispatch({ type: "ERROR", error_message: e})
+      });
+  }
+}

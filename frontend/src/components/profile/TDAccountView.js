@@ -36,7 +36,7 @@ class TDAccountView extends Component {
     let tda = this.props.tdameritrade;
     let health = null;
     if (tda.healthcheck === "loading") {
-      health = <i class="sync loading icon"></i>
+      health = <i className="sync loading icon"></i>
     } else if (tda.healthcheck === "pass") {
       health = <Icon name="check circle" color = "green"/>
     } else if (tda.healthcheck === "fail") {

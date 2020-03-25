@@ -13,7 +13,7 @@ class ProfileMenu extends Component {
     let tda = this.props.tdameritrade;
     let tdahealth = null;
     if (tda.healthcheck === "loading") {
-      tdahealth = <i class="sync loading icon"></i>
+      tdahealth = <i className="sync loading icon"></i>
     } else if (tda.healthcheck === "pass") {
       tdahealth = <Icon name="check circle" color = "green"/>
     } else if (tda.healthcheck === "fail") {

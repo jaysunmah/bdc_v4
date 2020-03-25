@@ -73,16 +73,27 @@ class TDAClient:
 		self.authenticate()
 		url = self.get_transactions_url()
 		res = requests.get(url, headers=self.get_auth_header()).json()
+		def filter_trade(t):
+			return ((t['type']  == 'TRADE') or
+					(t['type'] == 'RECEIVE_AND_DELIVER' and t['description'] == 'INTERNAL TRANSFER BETWEEN ACCOUNTS OR ACCOUNT TYPES'))
 		def get_trade(t):
+			if t['type'] == 'TRADE':
+				value = Decimal(t['transactionItem']['price'])
+				instruction = t['transactionItem']['instruction']
+			else:
+				date = datetime.datetime.fromisoformat(t['transactionDate'][:10])
+				value = Decimal(self.get_historical_quote(t['transactionItem']['instrument']['symbol'], date, date + datetime.timedelta(days=1))[0]['close'])
+				instruction = 'BUY'
+
 			return {
 				'uid': t['transactionId'],
-				'instruction': t['transactionItem']['instruction'],
+				'instruction': instruction,
 				'date': t['orderDate'] if 'orderDate' in t else t['transactionDate'],
 				'stock': t['transactionItem']['instrument']['symbol'],
 				'quantity': Decimal(t['transactionItem']['amount']),
-				'value': Decimal(t['transactionItem']['price'])
+				'value': value
 			}
-		return [get_trade(t) for t in res if t['type'] == 'TRADE']
+		return [get_trade(t) for t in res if filter_trade(t)]
 
 	def get_historical_quote(self, ticker: str, start: datetime.datetime, end: datetime.datetime):
 		self.authenticate()
@@ -96,7 +107,6 @@ class TDAClient:
 			'endDate': int(end.timestamp()) * 1000
 		}
 		res = requests.get(url, params=params, headers=self.get_auth_header()).json()
-
 		return [{
 			'close': float(quote['close']),
 			'date': datetime.datetime.fromtimestamp(quote['datetime'] / 1000)

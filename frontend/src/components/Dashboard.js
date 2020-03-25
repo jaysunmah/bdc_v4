@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import BdcContainer from "./BdcContainer";
 import { dashboard } from "../../actions";
 import { connect } from "react-redux";
-import { Grid, Segment } from 'semantic-ui-react'
+import { Grid, Segment, Container } from 'semantic-ui-react'
 
 class Dashboard extends Component {
 
@@ -31,24 +31,26 @@ class Dashboard extends Component {
   render() {
     return (
       <BdcContainer>
-        <h1>Dashboard</h1>
-        {Object.keys(this.props.dashboard.portfolios).map(this.renderPortfolio.bind(this))}
-        <Grid columns={3} >
-          <Grid.Row stretched>
-            <Grid.Column>
-              <Segment>1</Segment>
-            </Grid.Column>
-            <Grid.Column>
-              <Segment>1</Segment>
-              <Segment>2</Segment>
-            </Grid.Column>
-            <Grid.Column>
-              <Segment>1</Segment>
-              <Segment>2</Segment>
-              <Segment>3</Segment>
-            </Grid.Column>
-          </Grid.Row>
-        </Grid>
+        <Container >
+          <h1>Dashboard</h1>
+          {Object.keys(this.props.dashboard.portfolios).map(this.renderPortfolio.bind(this))}
+          <Grid columns={3} >
+            <Grid.Row stretched>
+              <Grid.Column>
+                <Segment>1</Segment>
+              </Grid.Column>
+              <Grid.Column>
+                <Segment>1</Segment>
+                <Segment>2</Segment>
+              </Grid.Column>
+              <Grid.Column>
+                <Segment>1</Segment>
+                <Segment>2</Segment>
+                <Segment>3</Segment>
+              </Grid.Column>
+            </Grid.Row>
+          </Grid>
+        </Container>
       </BdcContainer>
     );
   }

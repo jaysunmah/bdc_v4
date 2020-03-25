@@ -6,7 +6,8 @@ const initialState = {
     client_id: ""
   },
   loaded: false,
-  status: "Loading td account info..."
+  status: "Loading td account info...",
+  healthcheck: null
 }
 
 export default function tdameritrade(state=initialState, action) {
@@ -23,6 +24,12 @@ export default function tdameritrade(state=initialState, action) {
       return {...state, status: action.error_message };
     case 'RESET_TD_ACCOUNT':
       return initialState;
+    case 'LOADING_HEALTHCHECK':
+      return {...state, healthcheck: "loading"};
+    case 'LOADED_HEALTHCHECK':
+      return {...state, healthcheck: "pass"};
+    case 'FAILED_HEALTHCHECK':
+      return {...state, healthcheck: "fail"};
     default:
       return state;
   }

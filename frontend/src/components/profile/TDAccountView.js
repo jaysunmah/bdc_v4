@@ -4,13 +4,14 @@ import { connect } from "react-redux";
 import ProfileContainer from "./ProfileContainer";
 import { tdameritrade } from "../../../actions";
 import {Link} from "react-router-dom";
+import { Loader, Icon } from 'semantic-ui-react'
 
 class TDAccountView extends Component {
   state = {
     refresh_token: "",
     access_token: "",
     account_id: "",
-    client_id: ""
+    client_id: "",
   }
 
   componentDidMount() {
@@ -27,8 +28,22 @@ class TDAccountView extends Component {
     this.props.editTDAccount(tda);
   }
 
+  healthcheck = e => {
+    this.props.healthcheckTD();
+  }
+
   render() {
     let tda = this.props.tdameritrade;
+    let health = null;
+    if (tda.healthcheck === "loading") {
+      health = <div className="ui active inline loader small"></div>
+    } else if (tda.healthcheck === "pass") {
+      health = <Icon name="check circle" color = "green"/>
+    } else if (tda.healthcheck === "fail") {
+      health = <Icon name="times circle" color = "red"/>
+    }
+
+
     return (
       <ProfileContainer>
         <form onSubmit={this.onSubmit}>
@@ -72,6 +87,8 @@ class TDAccountView extends Component {
             <p>Status: {tda.status}</p>
           </fieldset>
         </form>
+        <button onClick={this.healthcheck}>Healthcheck</button>
+        {health}
       </ProfileContainer>
     );
   }
@@ -88,6 +105,7 @@ const mapDispatchToProps = dispatch => {
     loadTDAccount: () => dispatch(tdameritrade.loadTDAccount()),
     upsertTDAccount: (account) => dispatch(tdameritrade.upsertTDAccount(account)),
     editTDAccount: (account) => dispatch(tdameritrade.editTDAccount(account)),
+    healthcheckTD: () => dispatch(tdameritrade.healthcheckTD())
   }
 }
 

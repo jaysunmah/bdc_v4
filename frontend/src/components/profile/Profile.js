@@ -5,7 +5,7 @@ import ProfileContainer from "./ProfileContainer";
 class Profile extends Component {
   render() {
     return (
-      <ProfileContainer>
+      <ProfileContainer >
         TODO!
       </ProfileContainer>
     );

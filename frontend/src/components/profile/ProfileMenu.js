@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from "react-redux";
-import { Menu } from 'semantic-ui-react'
+import { Menu, Loader, Icon } from 'semantic-ui-react'
 import { Link } from "react-router-dom";
 import {auth, menu, tdameritrade} from "../../../actions";
 
@@ -10,8 +10,17 @@ class ProfileMenu extends Component {
   };
 
   render() {
+    let tda = this.props.tdameritrade;
+    let tdahealth = null;
+    if (tda.healthcheck === "loading") {
+      tdahealth = <i class="sync loading icon"></i>
+    } else if (tda.healthcheck === "pass") {
+      tdahealth = <Icon name="check circle" color = "green"/>
+    } else if (tda.healthcheck === "fail") {
+      tdahealth = <Icon name="times circle" color = "red"/>
+    }
     return (
-      <Menu fluid vertical tabular>
+      <Menu vertical tabular>
         <Menu.Item
           active={this.props.menu.active === "/profile"}
           as={Link} to={"/profile"}
@@ -24,7 +33,19 @@ class ProfileMenu extends Component {
           as={Link} to={"/profile/tdameritrade"}
           onClick={this.handleItemClick}
         >
-          TD Ameritrade Profile
+          TD Ameritrade Profile {tdahealth}
+        </Menu.Item>
+        <Menu.Item
+          active={this.props.menu.active === "/profile/robinhood"}
+          as={Link} to={"/profile/robinhood"}
+          onClick={this.handleItemClick}
+        >
+          Robinhood Profile
+        </Menu.Item>
+        <Menu.Item
+          onClick={() => this.props.healthcheck()}
+        >
+          Verify Accounts
         </Menu.Item>
         <Menu.Item
           onClick={() => this.props.logout()}
@@ -40,6 +61,8 @@ class ProfileMenu extends Component {
 const mapStateToProps = state => {
   return {
     menu: state.menu,
+    tdameritrade: state.tdameritrade
+
   }
 }
 
@@ -50,7 +73,10 @@ const mapDispatchToProps = dispatch => {
       dispatch(tdameritrade.resetTDAccount());
     },
     selectItem: (item) => {
-      return dispatch(menu.selectItem(item))
+      dispatch(menu.selectItem(item))
+    },
+    healthcheck: () => {
+      dispatch(tdameritrade.healthcheckTD())
     }
   }
 }

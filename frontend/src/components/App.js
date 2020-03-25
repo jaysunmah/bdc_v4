@@ -16,6 +16,7 @@ import NotFound from "./NotFound";
 import Profile from "./profile/Profile";
 import Dashboard from "./Dashboard";
 import Register from "./Register";
+import RHAccountView from "./profile/RHAccountView";
 
 class App extends Component {
   constructor(props) {
@@ -34,6 +35,7 @@ class App extends Component {
             <Route exact path="/" component={Landing} />
             <Route exact path="/login" component={Login} />
             <Route exact path="/profile/tdameritrade" component={TDAccountView} />
+            <Route exact path="/profile/robinhood" component={RHAccountView} />
             <Route exact path={"/profile"} component={Profile} />
             <Route exact path={"/dashboard"} component={Dashboard} />
             <Route exact path={"/register"} component={Register} />

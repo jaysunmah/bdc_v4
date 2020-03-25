@@ -99,7 +99,8 @@ const mapDispatchToProps = dispatch => {
       return dispatch(menu.selectItem(item))
     },
     logout: () => {
-      return dispatch(auth.logout());
+      dispatch(auth.logout());
+      dispatch(tdameritrade.resetTDAccount());
     }
   }
 }

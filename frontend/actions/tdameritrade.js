@@ -53,3 +53,11 @@ export const editTDAccount = (account) => {
     dispatch({ type: "EDIT_TD_ACCOUNT", account });
   }
 }
+
+export const healthcheckTD = () => {
+  return (dispatch, getState) => {
+    let headers = getHeaderWithAuthToken(getState);
+    dispatch({ type: "LOADING_HEALTHCHECK" });
+    setTimeout(() => {dispatch({type: "FAILED_HEALTHCHECK"})}, 1000)
+  }
+}

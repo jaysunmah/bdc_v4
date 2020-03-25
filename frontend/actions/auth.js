@@ -100,10 +100,14 @@ export const logout = () => {
   }
 }
 
-export const register = (username, password) => {
+export const register = (username, password, confirmpassword) => {
   return (dispatch, getstate) => {
     let headers = {"Content-Type": "application/json"};
     let body = JSON.stringify({username, password});
+    if (password !== confirmpassword) {
+      dispatch({type: "REGISTRATION_ERROR", data: ['Passwords do not match']})
+      throw ['Passwords do not match']
+    }
     return fetch("/api/auth/register/", {headers, body, method: "POST"})
       .then(res => {
         if (res.status < 500) {
@@ -118,8 +122,6 @@ export const register = (username, password) => {
       .then(res => {
         if (res.status === 200) {
           dispatch({type: 'REGISTRATION_SUCCESSFUL', data: res.data });
-          //can maybe add auto login here later instead of users retyping their username, pass in login form
-          history.push('/login');
           return res.data;
         } else if (res.status === 400) {
           dispatch({type: "REGISTRATION_ERROR", data: res.data});

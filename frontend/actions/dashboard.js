@@ -47,3 +47,9 @@ export const loadAllPositions = () => {
       });
   }
 }
+
+export const selectPortfolio = (port_id) => {
+  return (dispatch) => {
+    dispatch({ type: "SELECT_PORTFOLIO", port_id })
+  }
+}

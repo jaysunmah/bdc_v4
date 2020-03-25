@@ -1,7 +1,7 @@
 from rest_framework import generics
 from rest_framework.response import Response
 
-from .serializers import OrderSerializer, OrderUpsertSerializer
+from .serializers import OrderSerializer, BrokerageInputSerializer
 from .models import Portfolio, Brokerage, Order
 from backend.tdameritrade.util.helpers import upsert_orders as upsert_tda_orders
 from backend.tdameritrade.models import TDAccount
@@ -12,7 +12,7 @@ from backend.robinhood.rhscraper import RHClient
 
 class OrdersAPI(generics.GenericAPIView):
     url = "bdc/orders/"
-    serializer_class = OrderUpsertSerializer
+    serializer_class = BrokerageInputSerializer
 
     def get(self, request):
         """

@@ -44,5 +44,5 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = ('uid', 'portfolio', 'stock', 'quantity', 'value', 'is_buy_type', 'date')
 
-class OrderUpsertSerializer(serializers.Serializer):
+class BrokerageInputSerializer(serializers.Serializer):
     brokerage = serializers.CharField()

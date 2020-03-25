@@ -56,7 +56,7 @@ export const login = (username, password) => {
         if (res.status === 200) {
           dispatch({type: 'LOGIN_SUCCESSFUL', data: res.data });
           return res.data;
-        } else if (res.status === 403 || res.status === 401) {
+        } else if (res.status === 403 || res.status === 401 || res.status === 400) {
           dispatch({type: "AUTHENTICATION_ERROR", data: res.data});
           throw res.data;
         } else {
@@ -94,6 +94,40 @@ export const logout = () => {
           return res.data;
         } else if (res.status === 403 || res.status === 401) {
           dispatch({type: "AUTHENTICATION_ERROR", data: res.data});
+          throw res.data;
+        }
+      })
+  }
+}
+
+export const register = (username, password, confirmpassword) => {
+  return (dispatch, getstate) => {
+    let headers = {"Content-Type": "application/json"};
+    let body = JSON.stringify({username, password});
+    if (password !== confirmpassword) {
+      dispatch({type: "REGISTRATION_ERROR", data: ['Passwords do not match']})
+      throw ['Passwords do not match']
+    }
+    return fetch("/api/auth/register/", {headers, body, method: "POST"})
+      .then(res => {
+        if (res.status < 500) {
+          return res.json().then(data => {
+            return {status: res.status, data};
+          })
+        } else {
+          console.log("Server Error!");
+          throw res;
+        }
+      })
+      .then(res => {
+        if (res.status === 200) {
+          dispatch({type: 'REGISTRATION_SUCCESSFUL', data: res.data });
+          return res.data;
+        } else if (res.status === 400) {
+          dispatch({type: "REGISTRATION_ERROR", data: res.data});
+          throw res.data;
+        } else {
+          dispatch({type: "REGISTRATION_FAILED", data: res.data});
           throw res.data;
         }
       })

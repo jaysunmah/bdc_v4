@@ -25,7 +25,7 @@ class OrdersAPI(generics.GenericAPIView):
             portfolios = Portfolio.objects.filter(bdc_user=self.request.user, brokerage=brokerage)
         else:
             portfolios = Portfolio.objects.filter(bdc_user=self.request.user)
-        orders = Order.objects.filter(portfolio__in=portfolios).order_by('date')
+        orders = Order.objects.filter(portfolio__in=portfolios).order_by('-date')
         return Response(OrderSerializer(orders, many=True).data)
 
     def post(self, request):

@@ -75,7 +75,7 @@ class TDAClient:
 		res = requests.get(url, headers=self.get_auth_header()).json()
 		def filter_trade(t):
 			return ((t['type']  == 'TRADE') or
-					(t['type'] == 'RECEIVE_AND_DELIVER' and t['description'] == 'INTERNAL TRANSFER BETWEEN ACCOUNTS OR ACCOUNT TYPES'))
+					(t['type'] == 'RECEIVE_AND_DELIVER' and t['description'] == 'TRANSFER OF SECURITY OR OPTION IN'))
 		def get_trade(t):
 			if t['type'] == 'TRADE':
 				value = Decimal(t['transactionItem']['price'])

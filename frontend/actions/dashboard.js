@@ -43,7 +43,30 @@ export const loadAllPositions = () => {
         }
       })
       .catch(e => {
-        dispatch({ type: "ERROR", error_message: e})
+        dispatch({ type: "ERROR", error_message: e })
+      });
+  }
+}
+
+export const loadAllOrders = () => {
+  return (dispatch, getState) => {
+    let headers = getHeaderWithAuthToken(getState);
+    fetch("/api/bdc/orders/", { headers, method: "GET" })
+      .then(res => {
+        if (res.status == 200) {
+          return res.json()
+        }
+        throw "Internal server error in getting orders"
+      })
+      .then(data => {
+        if (data.error) {
+          dispatch({ type: "ERROR", error_message: data.error});
+        } else {
+          dispatch({ type: "LOADED_ORDERS", orders: data })
+        }
+      })
+      .catch(e => {
+        dispatch({ type: "ERROR", error_message: e })
       });
   }
 }

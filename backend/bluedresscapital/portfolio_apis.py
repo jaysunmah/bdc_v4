@@ -108,12 +108,31 @@ class PortfolioHistoryAPI(generics.GenericAPIView):
                         stock_price = StockQuote.objects.get(stock=stock, date=date_obj)
                     except StockQuote.DoesNotExist:
                         print("stock price doesnt exist for stock %s on date %s, trying to fall back on a previous date" % (stock.ticker, str(date_obj)))
-                        stock_prices = StockQuote.objects.filter(date__lte=date_obj).order_by('-date')
+                        stock_prices = StockQuote.objects.filter(stock=stock, date__lte=date_obj).order_by('-date')
                         if stock_prices.exists():
                             stock_price = stock_prices.first()
+                            print("using stock price", stock_price.price, "on date", stock_price.date)
                         else:
                             raise Exception("couldn't find any prices for stock %s on date %s" % (stock.ticker, str(date_obj)))
+
+                    if str(date_obj) in ['2019-11-13', '2019-11-14', '2019-11-15']:
+                        if portfolio[stock] != Decimal(0):
+                            print("{},{},{}".format(stock.ticker, stock_price.price, portfolio[stock]))
+
                     stocks_value += stock_price.price * portfolio[stock]
+
+            if str(date_obj) in ['2019-11-13', '2019-11-14', '2019-11-15']:
+                prev_portfolio = portfolio_snapshots[-1]
+                for stock in portfolio:
+                    if stock in prev_portfolio:
+                        if prev_portfolio[stock] != portfolio[stock]:
+                            print(stock, prev_portfolio[stock], " ---> ", portfolio[stock])
+                    else:
+                        print(stock, 0, " ---> ", portfolio[stock])
+                print(str(date_obj), cash, stocks_value)
+                for order in order_bucket:
+                    print(order.stock, order.is_buy_type, order.quantity, order.value)
+                print("")
 
             portfolio_value.append({'date': date_obj, 'cash': cash, 'stocks_value': stocks_value})
             portfolio_snapshots.append(copy.deepcopy(portfolio))

@@ -36,7 +36,6 @@ class BdcMenu extends Component {
 
   render() {
     const { classes } = this.props;
-    console.log(this.props.auth.isAuthenticated)
     let loginLogoutMenuItem = (
       <Button component={ Link } to="/login" color="inherit">Login</Button>
     );
@@ -54,7 +53,7 @@ class BdcMenu extends Component {
     return (
       <div className={classes.root}>
       <AppBar position="static">
-        <Toolbar>
+        <Toolbar variant={"dense"}>
           <Button component={ Link } to="/" color="inherit">Home</Button>
           <Button component={ Link } to="/reviews" color="inherit">Reviews</Button>
           {dashboardMenuItem}

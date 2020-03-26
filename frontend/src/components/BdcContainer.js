@@ -7,6 +7,7 @@ export default class BdcContainer extends Component {
     return (
       <div>
         <BdcMenu></BdcMenu>
+        <br></br>
         <Container >
           {this.props.children}
         </Container>

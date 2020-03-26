@@ -10,10 +10,11 @@ class Dashboard extends Component {
   componentDidMount() {
     this.props.loadAllPortfolios();
     this.props.loadAllPositions();
+    this.props.loadAllOrders();
   }
 
   renderPortfolio() {
-    const { positions, selected_portfolio, selected_portfolio_id } = this.props.dashboard;
+    const { orders, positions, selected_portfolio, selected_portfolio_id } = this.props.dashboard;
     if (selected_portfolio === undefined) {
       return (
         <div>TODO figure out what to show here</div>
@@ -21,17 +22,46 @@ class Dashboard extends Component {
     }
     const { nickname, brokerage } = selected_portfolio;
     let portfolio_positions = positions.filter(({ portfolio }) => (portfolio + "") === (selected_portfolio_id + ""));
-    let columns = [
+    let portfolio_orders = orders
+      .filter(({ portfolio }) => (portfolio+"")===(selected_portfolio_id+""))
+      .map(({ stock, quantity, value, is_buy_type, date }) => {
+        let type = is_buy_type ? "BUY" : "SELL";
+        let amount = (new Number(quantity) * new Number(value)).toFixed(2);
+        return { date: date.substr(0, 10), stock, type, quantity, price: value, value: amount };
+      });
+    console.log(portfolio_orders);
+    let positionsColumns = [
       { title: 'Stock', field: 'stock' },
       { title: 'Quantity', field: 'quantity' },
       { title: 'Value', field: 'value' },
     ];
+    let ordersColumns = [
+      { title: 'Date', field: 'date' },
+      { title: 'Stock', field: 'stock' },
+      { title: 'Type', field: 'type' },
+      { title: 'Quantity', field: 'quantity' },
+      { title: 'Price', field: 'price' },
+      { title: 'Value', field: 'value' }
+    ];
     return (
       <div>
+        <h1>{nickname}</h1>
+        <p>{brokerage}</p>
         <MaterialTable
-          title={nickname}
-          columns={columns}
+          title={"Positions"}
+          columns={positionsColumns}
           data={portfolio_positions}
+        />
+        <br></br>
+        <MaterialTable
+          title={"Orders"}
+          columns={ordersColumns}
+          data={portfolio_orders}
+          options={{
+            date: {
+              defaultSort: "desc"
+            }
+          }}
         />
       </div>
     );
@@ -89,6 +119,7 @@ const mapDispatchToProps = dispatch => {
   return {
     loadAllPortfolios: () => dispatch(dashboard.loadAllPortfolios()),
     loadAllPositions: () => dispatch(dashboard.loadAllPositions()),
+    loadAllOrders: () => dispatch(dashboard.loadAllOrders()),
     selectPortfolio: (port_id) => dispatch(dashboard.selectPortfolio(port_id))
   }
 }

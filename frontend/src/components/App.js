@@ -17,7 +17,13 @@ import Profile from "./profile/Profile";
 import Dashboard from "./Dashboard";
 import Register from "./Register";
 import RHAccountView from "./profile/RHAccountView";
+import { ThemeProvider } from '@material-ui/core/styles';
+import { muiTheme } from './Theme'
 
+const theme = {
+  ...muiTheme
+  // custom styles
+};
 class App extends Component {
   constructor(props) {
     super(props);
@@ -29,8 +35,10 @@ class App extends Component {
   }
   render() {
     return (
+      
       <Provider store={store}>
         <Router history={history}>
+        <ThemeProvider theme={theme}>
           <Switch>
             <Route exact path="/" component={Landing} />
             <Route exact path="/login" component={Login} />
@@ -41,8 +49,10 @@ class App extends Component {
             <Route exact path={"/register"} component={Register} />
             <Route component={NotFound} />
           </Switch>
+          </ThemeProvider>
         </Router>
       </Provider>
+      
     );
   }
 }

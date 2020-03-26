@@ -29,7 +29,6 @@ class Dashboard extends Component {
         let amount = (new Number(quantity) * new Number(value)).toFixed(2);
         return { date: date.substr(0, 10), stock, type, quantity, price: value, value: amount };
       });
-    console.log(portfolio_orders);
     let positionsColumns = [
       { title: 'Stock', field: 'stock' },
       { title: 'Quantity', field: 'quantity' },

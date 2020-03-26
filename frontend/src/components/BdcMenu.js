@@ -4,7 +4,25 @@ import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import {auth, menu, tdameritrade} from '../../actions';
 import Dashboard from "./Dashboard";
+import { withStyles } from "@material-ui/core/styles";
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
+import Button from '@material-ui/core/Button';
+import IconButton from '@material-ui/core/IconButton';
+import MenuIcon from '@material-ui/icons/Menu';
 
+const useStyles = theme => ({
+  root: {
+    flexGrow: 1,
+  },
+  menuButton: {
+    marginRight: theme.spacing(2),
+  },
+  title: {
+    flexGrow: 1,
+  },
+});
 
 class BdcMenu extends Component {
   state = {};
@@ -17,68 +35,35 @@ class BdcMenu extends Component {
   }
 
   render() {
+    const { classes } = this.props;
+    console.log(this.props.auth.isAuthenticated)
     let loginLogoutMenuItem = (
-      <Menu.Item
-        position='right'
-        as={Link} to="/login"
-      >
-        Login
-      </Menu.Item>
+      <Button component={ Link } to="/login" color="inherit">Login</Button>
     );
     let dashboardMenuItem = "";
 
     if (this.props.auth.isAuthenticated) {
       loginLogoutMenuItem = (
-        <Menu.Menu position='right'>
-        <Dropdown item icon='user' simple>
-        <Dropdown.Menu>
-          <Dropdown.Item
-            as={Link} to={"/profile"}
-            onClick={this.handleItemClick}
-            active={this.props.menu.active.includes("/profile")}>
-            Profile
-          </Dropdown.Item>
-          <Dropdown.Item
-            onClick={() => this.props.logout()}
-            >
-            Logout
-          </Dropdown.Item>
-        </Dropdown.Menu>
-      </Dropdown>
-      </Menu.Menu>
+        <Button component={ Link } to="/profile" color="inherit">Profile</Button>
       );
       dashboardMenuItem = (
-        <Menu.Item
-          as={Link} to={"/dashboard"}
-          onClick={this.handleItemClick}
-          active={this.props.menu.active === "/dashboard"}
-        >
-          Dashboard
-        </Menu.Item>
+        <Button component={ Link } to="/dashboard" color="inherit">Dashboard</Button>
       );
     }
 
     return (
-      <Menu>
-        <Menu.Item
-          active={this.props.menu.active === '/'}
-          onClick={this.handleItemClick}
-          as={Link} to="/"
-        >
-          Home
-        </Menu.Item>
-
-        <Menu.Item
-          active={this.props.menu.active === '/reviews'}
-          onClick={this.handleItemClick}
-          as={Link} to="/reviews"
-        >
-          Reviews
-        </Menu.Item>
-        {dashboardMenuItem}
-
-        {loginLogoutMenuItem}
-      </Menu>
+      <div className={classes.root}>
+      <AppBar position="static">
+        <Toolbar>
+          <Button component={ Link } to="/" color="inherit">Home</Button>
+          <Button component={ Link } to="/reviews" color="inherit">Reviews</Button>
+          {dashboardMenuItem}
+          <Typography variant="h6" className={classes.title}>
+          </Typography>
+          {loginLogoutMenuItem}
+        </Toolbar>
+      </AppBar>
+    </div>
     )
   }
 }
@@ -105,4 +90,4 @@ const mapDispatchToProps = dispatch => {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(BdcMenu);
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(useStyles)(BdcMenu));

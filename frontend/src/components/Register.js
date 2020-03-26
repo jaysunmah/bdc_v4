@@ -14,16 +14,18 @@ import Container from '@material-ui/core/Container';
 import {Link, Redirect} from "react-router-dom";
 import {auth} from '../../actions';
 import {connect} from "react-redux";
+import { withStyles } from "@material-ui/core/styles";
+
 
 import BdcContainer from "./BdcContainer";
 
-const classes = makeStyles((theme) => ({
+const useStyles = theme => ({
   paper: {
     marginTop: theme.spacing(8),
     flexDirection: 'column',
     alignItems: 'center',
   }
-}));
+});
 
 class Register extends Component {
   state = {
@@ -44,6 +46,7 @@ class Register extends Component {
   };
 
   render() {
+    const { classes } = this.props;
     if (this.props.isAuthenticated) {
       return <Redirect to="/"/>
     }
@@ -141,4 +144,4 @@ const mapDispatchToProps = dispatch => {
   };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Register);
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(useStyles)(Register));

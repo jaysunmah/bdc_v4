@@ -14,16 +14,18 @@ import Container from '@material-ui/core/Container';
 import {Link, Redirect} from "react-router-dom";
 import {auth} from '../../actions';
 import {connect} from "react-redux";
+import { withStyles } from "@material-ui/core/styles";
+
 
 import BdcContainer from "./BdcContainer";
 
-const classes = makeStyles((theme) => ({
+const useStyles = theme => ({
   paper: {
     marginTop: theme.spacing(8),
     flexDirection: 'column',
     alignItems: 'center',
   }
-}));
+});
 
 class Login extends Component {
   state = {
@@ -37,6 +39,7 @@ class Login extends Component {
   };
 
   render() {
+    const { classes } = this.props;
     if (this.props.isAuthenticated) {
       return <Redirect to="/"/>
     }
@@ -132,4 +135,4 @@ const mapDispatchToProps = dispatch => {
   };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Login);
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(useStyles)(Login));

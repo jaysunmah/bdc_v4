@@ -2,8 +2,9 @@ import React, { Component } from 'react'
 import BdcContainer from "./BdcContainer";
 import { dashboard } from "../../actions";
 import { connect } from "react-redux";
-import MaterialTable from 'material-table';
+import MaterialTable, {MTableToolbar} from 'material-table';
 import { AppBar, Tabs, Tab, Box, Typography } from "@material-ui/core";
+import Icon from "@material-ui/core/Icon";
 
 class Dashboard extends Component {
 
@@ -54,17 +55,37 @@ class Dashboard extends Component {
           title={"Positions"}
           columns={positionsColumns}
           data={portfolio_positions}
+          actions={[
+            {
+              icon: 'refresh',
+              tooltip: 'Refresh positions data',
+              onClick: (e, d) => {
+                console.log(e, d);
+              },
+              isFreeAction: true
+            }
+          ]}
         />
         <br></br>
         <MaterialTable
           title={"Orders"}
           columns={ordersColumns}
           data={portfolio_orders}
-          options={{
-            date: {
-              defaultSort: "desc"
+          actions={[
+            {
+              icon: () => {
+                if (true) {
+                  return (<Icon>refresh</Icon>);
+                }
+                return (<i className={"small spinner loading icon"} />);
+              },
+              tooltip: 'Refresh orders data',
+              onClick: (e, d) => {
+                console.log(e, d);
+              },
+              isFreeAction: true
             }
-          }}
+          ]}
         />
       </div>
     );

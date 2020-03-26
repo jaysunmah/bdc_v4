@@ -2,8 +2,8 @@ import React, { Component } from 'react'
 import BdcContainer from "./BdcContainer";
 import { dashboard } from "../../actions";
 import { connect } from "react-redux";
-import {Grid, Input, Menu, Segment} from 'semantic-ui-react'
 import MaterialTable from 'material-table';
+import { AppBar, Tabs, Tab, Box, Typography } from "@material-ui/core";
 
 class Dashboard extends Component {
 
@@ -21,18 +21,22 @@ class Dashboard extends Component {
       );
     }
     const { nickname, brokerage } = selected_portfolio;
-    let portfolio_positions = positions.filter(({ portfolio }) => (portfolio + "") === (selected_portfolio_id + ""));
+    let portfolio_positions = positions
+      .filter(({ portfolio }) => (portfolio + "") === (selected_portfolio_id + ""))
+      .map(({ stock, quantity, value }) =>
+        ({ stock, quantity: parseFloat(parseFloat(quantity).toFixed(2)), value: parseFloat(parseFloat(value).toFixed(2))}));
+
     let portfolio_orders = orders
       .filter(({ portfolio }) => (portfolio+"")===(selected_portfolio_id+""))
       .map(({ stock, quantity, value, is_buy_type, date }) => {
         let type = is_buy_type ? "BUY" : "SELL";
-        let amount = (new Number(quantity) * new Number(value)).toFixed(2);
-        return { date: date.substr(0, 10), stock, type, quantity, price: value, value: amount };
+        let amount = parseFloat((new Number(quantity) * new Number(value)).toFixed(2));
+        return { date: date.substr(0, 10), stock, type, quantity: parseFloat(quantity), price: parseFloat(value), value: amount };
       });
     let positionsColumns = [
       { title: 'Stock', field: 'stock' },
       { title: 'Quantity', field: 'quantity' },
-      { title: 'Value', field: 'value' },
+      { title: 'Value', field: 'value' }
     ];
     let ordersColumns = [
       { title: 'Date', field: 'date' },
@@ -70,39 +74,64 @@ class Dashboard extends Component {
     this.props.selectPortfolio(port_id);
   }
 
+  // renderMenu() {
+  //   const { selected_portfolio, portfolios } = this.props.dashboard;
+  //   return (
+  //     <Menu attached='top' tabular>
+  //       <Menu.Item
+  //         name='All'
+  //         active={selected_portfolio === undefined}
+  //         onClick={() => this.handlePortfolioSelect(-1)}
+  //       />
+  //       {Object.keys(portfolios).map((port_id, i) =>{
+  //           return <Menu.Item
+  //             key={i}
+  //             name={portfolios[port_id]['nickname']}
+  //             active={selected_portfolio != null ? selected_portfolio['nickname'] === portfolios[port_id]['nickname'] : false}
+  //             onClick={() => this.handlePortfolioSelect(port_id)}
+  //           />
+  //         }
+  //       )}
+  //     </Menu>
+  //   );
+  // }
   renderMenu() {
-    const { selected_portfolio, portfolios } = this.props.dashboard;
+    const { selected_portfolio, portfolios, selected_portfolio_id } = this.props.dashboard;
     return (
-      <Menu attached='top' tabular>
-        <Menu.Item
-          name='All'
-          active={selected_portfolio === undefined}
+      <Tabs value={selected_portfolio_id}>
+        <Tab
+          label={"All"}
+          value={-1}
           onClick={() => this.handlePortfolioSelect(-1)}
         />
         {Object.keys(portfolios).map((port_id, i) =>{
-            return <Menu.Item
+            return <Tab
               key={i}
-              name={portfolios[port_id]['nickname']}
-              active={selected_portfolio != null ? selected_portfolio['nickname'] === portfolios[port_id]['nickname'] : false}
+              value={port_id}
+              label={portfolios[port_id]['nickname']}
               onClick={() => this.handlePortfolioSelect(port_id)}
             />
           }
         )}
-      </Menu>
+      </Tabs>
     );
-
   }
 
   render() {
     return (
       <BdcContainer>
         <h1>Dashboard</h1>
-        <div>
-          {this.renderMenu()}
-          <Segment attached='bottom'>
-            {this.renderPortfolio()}
-          </Segment>
-        </div>
+          <AppBar position={"static"} color={"inherit"}>
+            {this.renderMenu()}
+            <Typography
+              component="div"
+              role="tabpanel"
+            >
+              <Box p={3}>
+                {this.renderPortfolio()}
+              </Box>
+            </Typography>
+          </AppBar>
       </BdcContainer>
     );
   }

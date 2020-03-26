@@ -3,56 +3,73 @@ import { connect } from "react-redux";
 import { Menu, Loader, Icon } from 'semantic-ui-react'
 import { Link } from "react-router-dom";
 import {auth, menu, tdameritrade} from "../../../actions";
+import { AppBar, Tabs, Tab, Box, Typography } from "@material-ui/core";
 
 class ProfileMenu extends Component {
-  handleItemClick = (e, { to }) => {
-    this.props.selectItem(to);
+  handleItemClick(dest){
+    console.log(dest)
+    this.props.selectItem(dest);
   };
 
-  render() {
+  renderTda() {
     let tda = this.props.tdameritrade;
-    let tdahealth = null;
     if (tda.healthcheck === "loading") {
-      tdahealth = <i className="sync loading icon"></i>
+       return (<div> TD Ameritrade Profile <i className="sync loading icon"></i></div>)
     } else if (tda.healthcheck === "pass") {
-      tdahealth = <Icon name="check circle" color = "green"/>
+      return (<div> TD Ameritrade Profile <Icon name="check circle" color = "green"/></div>)
     } else if (tda.healthcheck === "fail") {
-      tdahealth = <Icon name="times circle" color = "red"/>
+      return (<div> TD Ameritrade Profile<Icon name="times circle" color = "red"/></div>)
     }
+    return (<div> TD Ameritrade Profile </div>);
+
+  }
+
+  renderMenu() {
+    const {active} = this.props.menu;
+    let tdahealth = this.renderTda()
     return (
-      <Menu vertical tabular>
-        <Menu.Item
-          active={this.props.menu.active === "/profile"}
-          as={Link} to={"/profile"}
-          onClick={this.handleItemClick}
-        >
-          BDC Profile
-        </Menu.Item>
-        <Menu.Item
-          active={this.props.menu.active === "/profile/tdameritrade"}
-          as={Link} to={"/profile/tdameritrade"}
-          onClick={this.handleItemClick}
-        >
-          TD Ameritrade Profile {tdahealth}
-        </Menu.Item>
-        <Menu.Item
-          active={this.props.menu.active === "/profile/robinhood"}
-          as={Link} to={"/profile/robinhood"}
-          onClick={this.handleItemClick}
-        >
-          Robinhood Profile
-        </Menu.Item>
-        <Menu.Item
-          onClick={() => this.props.healthcheck()}
-        >
-          Verify Accounts
-        </Menu.Item>
-        <Menu.Item
-          onClick={() => this.props.logout()}
-        >
-          Logout
-        </Menu.Item>
-      </Menu>
+      <Tabs orientation="vertical" value={active}>
+        <Tab
+          label={'BDC Profile'}
+          value={'/profile'}
+          component={Link} 
+          to={"/profile"}
+          onClick={ () => this.handleItemClick('/profile')} 
+        />
+        <Tab
+          label={tdahealth}
+          value={'/profile/tdameritrade'}
+          component={Link} 
+          to={"/profile/tdameritrade"}
+          onClick={ () => this.handleItemClick('/profile/tdameritrade')}
+        />
+        <Tab
+          label={"Robinhood Profile"}
+          value={'/profile/robinhood'}
+          component={Link} 
+          to={"/profile/robinhood"}
+          onClick={ () => this.handleItemClick('/profile/robinhood')}
+        />
+         <Tab
+          label={"Verify Accounts"}
+          value={'/profile/verify'}
+          onClick={ () => this.props.healthcheck()}
+         />
+         <Tab
+          label={"Logout"}
+          value={'/profile/logout'}
+          onClick={ () => this.props.logout()}
+          
+         />
+      </Tabs>
+    );
+  }
+
+  render() {
+    return (
+      <AppBar position={"static"} color={"inherit"}>
+      {this.renderMenu()}
+      </AppBar>
     )
 
   }

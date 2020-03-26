@@ -36,7 +36,6 @@ class BdcMenu extends Component {
 
   render() {
     const { classes } = this.props;
-    console.log(this.props.auth.isAuthenticated)
     let loginLogoutMenuItem = (
       <Button component={ Link } to="/login" color="inherit">Login</Button>
     );

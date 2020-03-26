@@ -95,27 +95,6 @@ class Dashboard extends Component {
     this.props.selectPortfolio(port_id);
   }
 
-  // renderMenu() {
-  //   const { selected_portfolio, portfolios } = this.props.dashboard;
-  //   return (
-  //     <Menu attached='top' tabular>
-  //       <Menu.Item
-  //         name='All'
-  //         active={selected_portfolio === undefined}
-  //         onClick={() => this.handlePortfolioSelect(-1)}
-  //       />
-  //       {Object.keys(portfolios).map((port_id, i) =>{
-  //           return <Menu.Item
-  //             key={i}
-  //             name={portfolios[port_id]['nickname']}
-  //             active={selected_portfolio != null ? selected_portfolio['nickname'] === portfolios[port_id]['nickname'] : false}
-  //             onClick={() => this.handlePortfolioSelect(port_id)}
-  //           />
-  //         }
-  //       )}
-  //     </Menu>
-  //   );
-  // }
   renderMenu() {
     const { selected_portfolio, portfolios, selected_portfolio_id } = this.props.dashboard;
     return (

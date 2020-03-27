@@ -17,7 +17,7 @@ class PositionAPI(generics.GenericAPIView):
 
     def get(self, request):
         portfolios = get_portfolios(request, self.request.user)
-        positions = Position.objects.filter(portfolio__in=portfolios)
+        positions = Position.objects.filter(portfolio__in=portfolios).order_by('-value')
 
         return Response(PositionSerializer(positions, many=True).data)
 

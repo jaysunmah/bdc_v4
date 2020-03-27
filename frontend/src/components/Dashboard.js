@@ -13,6 +13,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import Tooltip from "@material-ui/core/Tooltip";
 import CircularProgress from '@material-ui/core/CircularProgress';
+import { green } from '@material-ui/core/colors';
 
 class Dashboard extends Component {
 
@@ -32,7 +33,6 @@ class Dashboard extends Component {
 
   renderPortfolio() {
     const { orders, positions, selected_portfolio, selected_portfolio_id, deleting_portfolio } = this.props.dashboard;
-    console.log(this.props.dashboard);
     if (selected_portfolio_id === -1) {
       return (
         <div>TODO figure out what to show here</div>
@@ -79,8 +79,13 @@ class Dashboard extends Component {
             title="Delete"
             onClick={this.handleDeletePortfolio.bind(this)}
           >
-            <IconButton aria-label="delete">
-              {deleting_portfolio ? <CircularProgress size={18}/> : <DeleteIcon /> }
+            <IconButton aria-label="delete" style={{position: 'relative'}}>
+              <DeleteIcon />
+              {deleting_portfolio && <CircularProgress size={45} style={{
+                color: green[500],
+                position: 'absolute',
+                zIndex: 1,
+              }}/>  }
             </IconButton>
           </Tooltip>
         </h1>
@@ -133,7 +138,7 @@ class Dashboard extends Component {
   renderMenu() {
     const { selected_portfolio, portfolios, selected_portfolio_id } = this.props.dashboard;
     return (
-      <Tabs value={selected_portfolio_id}>
+      <Tabs value={parseInt(selected_portfolio_id)}>
         <Tab
           label={"All"}
           value={-1}
@@ -142,7 +147,7 @@ class Dashboard extends Component {
         {Object.keys(portfolios).map((port_id, i) =>{
             return <Tab
               key={i}
-              value={port_id}
+              value={parseInt(port_id)}
               label={portfolios[port_id]['nickname']}
               onClick={() => this.handlePortfolioSelect(port_id)}
             />
@@ -191,8 +196,6 @@ const mapDispatchToProps = dispatch => {
     selectPortfolio: (port_id) => dispatch(dashboard.selectPortfolio(port_id)),
     deletePortfolio: (port_id) => {
       dispatch(dashboard.deletePortfolio(port_id));
-      dispatch(dashboard.loadAllPositions());
-      dispatch(dashboard.loadAllOrders());
     }
   }
 }

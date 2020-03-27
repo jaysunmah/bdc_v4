@@ -9,7 +9,14 @@ import copy
 
 from .serializers import PortfolioSerializer, PortfolioUpsertSerializer, PortfolioDeleteSerializer
 from .models import Portfolio, Brokerage, Order, StockQuote
-import time
+from backend.tdameritrade.util.helpers import upsert_orders as upsert_tda_orders
+from backend.tdameritrade.util.helpers import upsert_positions as upsert_tda_positions
+from backend.tdameritrade.models import TDAccount
+from backend.tdameritrade.tdascraper import TDAClient
+from backend.robinhood.util.helpers import upsert_orders as upsert_rh_orders
+from backend.robinhood.util.helpers import upsert_positions as upsert_rh_positions
+from backend.robinhood.models import RHAccount
+from backend.robinhood.rhscraper import RHClient
 
 def get_portfolios(request, user):
     if 'brokerage' in request.GET:
@@ -46,10 +53,22 @@ class PortfolioAPI(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         brokerage = Brokerage.objects.get(name=serializer.data['brokerage'])
         portfolio, _ = Portfolio.objects.get_or_create(bdc_user=self.request.user, brokerage=brokerage, nickname=serializer.data['nickname'])
-        port_dict = {}
-        for portfolio in Portfolio.objects.filter(bdc_user=self.request.user):
-            port_dict[portfolio.id] = PortfolioSerializer(portfolio).data
-        return Response(port_dict)
+
+        if brokerage.is_tda():
+            td_account = TDAccount.objects.get(bdc_user=self.request.user)
+            td_client = TDAClient(td_account)
+            upsert_tda_orders(td_client, portfolio)
+            upsert_tda_positions(td_client, portfolio)
+        elif brokerage.is_rh():
+            rh_account = RHAccount.objects.get(bdc_user=self.request.user)
+            rh_client = RHClient(rh_account)
+            upsert_rh_orders(rh_client, portfolio)
+            upsert_rh_positions(rh_client, portfolio)
+
+        return Response({
+            "new_portfolio": PortfolioSerializer(portfolio).data,
+            "port_id": portfolio.id
+        })
 
 class DeletePortfolioAPI(generics.GenericAPIView):
     url = "bdc/portfolio/delete/"
@@ -62,6 +81,9 @@ class DeletePortfolioAPI(generics.GenericAPIView):
         port_dict = {}
         for portfolio in Portfolio.objects.filter(bdc_user=self.request.user):
             port_dict[portfolio.id] = PortfolioSerializer(portfolio).data
+
+        import time
+        time.sleep(2)
         return Response(port_dict)
 
 class PortfolioHistoryAPI(generics.GenericAPIView):

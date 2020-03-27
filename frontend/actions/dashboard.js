@@ -94,6 +94,8 @@ export const deletePortfolio = (port_id) => {
           dispatch({ type: "ERROR", error_message: data.error});
         } else {
           dispatch({ type: "DELETED_PORTFOLIO", portfolios: data });
+          loadAllOrders()(dispatch, getState);
+          loadAllPositions()(dispatch, getState);
         }
       })
       .catch(e => {
@@ -119,7 +121,9 @@ export const savePortfolio = (name, type) => {
         if (data.error) {
           dispatch({ type: "ERROR", error_message: data.error});
         } else {
-          dispatch({ type: "SAVED_PORTFOLIO", portfolios: data });
+          dispatch({ type: "SAVED_PORTFOLIO", new_portfolio: data.new_portfolio, port_id: data.port_id });
+          loadAllOrders()(dispatch, getState);
+          loadAllPositions()(dispatch, getState);
         }
       })
       .catch(e => {

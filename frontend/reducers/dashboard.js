@@ -9,6 +9,7 @@ const initialState = {
   selected_portfolio_id: -1,
   status: "Loading portfolio info...",
   deleting_portfolio: false,
+  saving_portfolio: false,
 }
 
 export default function dashboard(state=initialState, action) {
@@ -30,9 +31,14 @@ export default function dashboard(state=initialState, action) {
     case 'SAVING_PORTFOLIO':
       return {...state, saving_portfolio: true};
     case 'SAVED_PORTFOLIO':
-      return {...state, saving_portfolio: false, portfolios: action.portfolios, selected_portfolio_id: -1, selected_portfolio: undefined};
+      portfolios = state['portfolios'];
+      const { new_portfolio, port_id } = action;
+      portfolios[port_id] = new_portfolio;
+      selected_portfolio = new_portfolio;
+      let selected_portfolio_id = port_id;
+      return {...state, saving_portfolio: false, portfolios , selected_portfolio_id, selected_portfolio };
     case 'ERROR':
-      return {...state, status: action.error_message };
+      return {...state, status: action.error_message, saving_portfolio: false, deleting_portfolio: false };
     default:
       return state;
   }

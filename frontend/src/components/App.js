@@ -19,7 +19,6 @@ import Profile from "./profile/Profile";
 import Dashboard from "./Dashboard";
 import Register from "./Register";
 import RHAccountView from "./profile/RHAccountView";
-import CreatePortfolio from "./CreatePortfolio";
 
 const theme = {
   ...muiTheme
@@ -47,7 +46,6 @@ class App extends Component {
             <Route exact path="/profile/robinhood" component={RHAccountView} />
             <Route exact path={"/profile"} component={Profile} />
             <Route exact path={"/dashboard"} component={Dashboard} />
-            <Route exact path={"/create_portfolio"} component={CreatePortfolio} />
             <Route exact path={"/register"} component={Register} />
             <Route component={NotFound} />
           </Switch>

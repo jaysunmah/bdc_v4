@@ -34,11 +34,6 @@ class BdcMenu extends Component {
     this.props.loadUser();
   }
 
-  renderCreatePortfolio() {
-    const { isAuthenticated } = this.props.auth;
-    return isAuthenticated && (<Button component={Link} to={"/create_portfolio"} color={"inherit"}>View/Edit Portfolios</Button>);
-  }
-
   renderloginButton() {
     const { isAuthenticated } = this.props.auth;
     if (isAuthenticated) {
@@ -62,7 +57,6 @@ class BdcMenu extends Component {
           <Button component={ Link } to="/" color="inherit">Home</Button>
           <Button component={ Link } to="/reviews" color="inherit">Reviews</Button>
           {this.renderDashboardItem()}
-          {this.renderCreatePortfolio()}
           <Typography variant="h6" className={classes.title}>
           </Typography>
           {this.renderloginButton()}

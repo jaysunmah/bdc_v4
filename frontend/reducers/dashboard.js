@@ -26,7 +26,11 @@ export default function dashboard(state=initialState, action) {
     case 'DELETING_PORTFOLIO':
       return {...state, deleting_portfolio: true };
     case 'DELETED_PORTFOLIO':
-      return {...state, deleting_portfolio: false, portfolios: action.portfolios, selected_portfolio_id: -1};
+      return {...state, deleting_portfolio: false, portfolios: action.portfolios, selected_portfolio_id: -1, selected_portfolio: undefined};
+    case 'SAVING_PORTFOLIO':
+      return {...state, saving_portfolio: true};
+    case 'SAVED_PORTFOLIO':
+      return {...state, saving_portfolio: false, portfolios: action.portfolios, selected_portfolio_id: -1, selected_portfolio: undefined};
     case 'ERROR':
       return {...state, status: action.error_message };
     default:

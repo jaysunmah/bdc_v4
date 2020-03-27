@@ -4,6 +4,7 @@ import {connect} from 'react-redux';
 import {TextField, FormControlLabel} from "@material-ui/core";
 import Button from "@material-ui/core/Button";
 import Checkbox from "@material-ui/core/Checkbox";
+import {dashboard} from "../../actions";
 
 class CreatePortfolio extends Component {
   state = {
@@ -14,7 +15,7 @@ class CreatePortfolio extends Component {
   handleSavePortfolio = e => {
     e.preventDefault();
     const { save_as, create_port_name } = this.state;
-    console.log(save_as, create_port_name);
+    this.props.savePortfolio(create_port_name, save_as);
   }
 
   render() {
@@ -61,4 +62,16 @@ class CreatePortfolio extends Component {
   }
 }
 
-export default CreatePortfolio;
+const mapStateToProps = state => {
+  return {
+    dashboard: state.dashboard,
+  }
+}
+
+const mapDispatchToProps = dispatch => {
+  return {
+    savePortfolio: (name, type) => dispatch(dashboard.savePortfolio(name, type))
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(CreatePortfolio);

@@ -30,19 +30,26 @@ class PortfolioAPI(generics.GenericAPIView):
             port_dict[portfolio.id] = PortfolioSerializer(portfolio).data
         return Response(port_dict)
 
-    # Posts to this endpoint will upsert the portfolio
-    # Endpoint is idempotent
     def post(self, request):
+        """
+        Posting to this endpoint will idemotently create the desired portfolio.
+        If given a brokerage that's not of type web (i.e. rh or tda), it will also do the following:
+            1. Create portfolio object (duh)
+            2. Scrape all orders relevant to the portfolio
+            3. Scrape all positions relevant to the portfolio
+            4. (TODO) Load all quotes related to the orders in the portfolio
+            5. Save them as meta data for the portfolio
+        :param request:
+        :return:
+        """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         brokerage = Brokerage.objects.get(name=serializer.data['brokerage'])
-        try:
-            portfolio = Portfolio.objects.get(bdc_user=self.request.user, brokerage=brokerage)
-            portfolio.nickname = serializer.data['nickname']
-        except Portfolio.DoesNotExist:
-            portfolio = Portfolio(bdc_user=self.request.user, nickname=serializer.data['nickname'], brokerage=brokerage)
-        portfolio.save()
-        return Response(PortfolioSerializer(portfolio).data)
+        portfolio, _ = Portfolio.objects.get_or_create(bdc_user=self.request.user, brokerage=brokerage, nickname=serializer.data['nickname'])
+        port_dict = {}
+        for portfolio in Portfolio.objects.filter(bdc_user=self.request.user):
+            port_dict[portfolio.id] = PortfolioSerializer(portfolio).data
+        return Response(port_dict)
 
 class DeletePortfolioAPI(generics.GenericAPIView):
     url = "bdc/portfolio/delete/"
@@ -52,7 +59,10 @@ class DeletePortfolioAPI(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         Portfolio.objects.get(id=serializer.data['portfolio_id']).delete()
-        return Response(PortfolioSerializer(Portfolio.objects.filter(bdc_user=self.request.user), many=True).data)
+        port_dict = {}
+        for portfolio in Portfolio.objects.filter(bdc_user=self.request.user):
+            port_dict[portfolio.id] = PortfolioSerializer(portfolio).data
+        return Response(port_dict)
 
 class PortfolioHistoryAPI(generics.GenericAPIView):
     url = "bdc/portfolio/history/"

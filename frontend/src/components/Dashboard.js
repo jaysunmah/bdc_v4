@@ -32,6 +32,7 @@ class Dashboard extends Component {
 
   renderPortfolio() {
     const { orders, positions, selected_portfolio, selected_portfolio_id, deleting_portfolio } = this.props.dashboard;
+    console.log(this.props.dashboard);
     if (selected_portfolio_id === -1) {
       return (
         <div>TODO figure out what to show here</div>
@@ -83,6 +84,7 @@ class Dashboard extends Component {
             </IconButton>
           </Tooltip>
         </h1>
+        <p>{brokerage}</p>
 
         <MaterialTable
           title={"Positions"}
@@ -187,7 +189,11 @@ const mapDispatchToProps = dispatch => {
     loadAllPositions: () => dispatch(dashboard.loadAllPositions()),
     loadAllOrders: () => dispatch(dashboard.loadAllOrders()),
     selectPortfolio: (port_id) => dispatch(dashboard.selectPortfolio(port_id)),
-    deletePortfolio: (port_id) => dispatch(dashboard.deletePortfolio(port_id))
+    deletePortfolio: (port_id) => {
+      dispatch(dashboard.deletePortfolio(port_id));
+      dispatch(dashboard.loadAllPositions());
+      dispatch(dashboard.loadAllOrders());
+    }
   }
 }
 

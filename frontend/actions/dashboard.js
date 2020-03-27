@@ -88,12 +88,38 @@ export const deletePortfolio = (port_id) => {
           return res.json()
         }
         throw "Internal server error in getting orders"
-    })
+      })
       .then(data => {
         if (data.error) {
           dispatch({ type: "ERROR", error_message: data.error});
         } else {
           dispatch({ type: "DELETED_PORTFOLIO", portfolios: data });
+        }
+      })
+      .catch(e => {
+        dispatch({ type: "ERROR", error_message: e })
+      })
+  }
+}
+
+export const savePortfolio = (name, type) => {
+  return (dispatch, getState) => {
+    dispatch({ type: "SAVING_PORTFOLIO" });
+    let headers = getHeaderWithAuthToken(getState);
+    let body = JSON.stringify({ nickname: name, brokerage: type });
+    fetch("/api/bdc/portfolio/", { headers, method: "POST", body })
+      .then(res => {
+        if (res.status == 200) {
+          return res.json()
+        }
+        throw "Internal server error in getting orders"
+
+      })
+      .then(data => {
+        if (data.error) {
+          dispatch({ type: "ERROR", error_message: data.error});
+        } else {
+          dispatch({ type: "SAVED_PORTFOLIO", portfolios: data });
         }
       })
       .catch(e => {

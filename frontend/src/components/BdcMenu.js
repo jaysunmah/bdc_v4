@@ -43,7 +43,7 @@ class BdcMenu extends Component {
 
     if (this.props.auth.isAuthenticated) {
       loginLogoutMenuItem = (
-        <Button component={ Link } to="/profile" color="inherit">Profile</Button>
+        <Button component={ Link } to="/profile" color="inherit" onClick={() => this.props.selectItem("/profile")}>Profile</Button>
       );
       dashboardMenuItem = (
         <Button component={ Link } to="/dashboard" color="inherit">Dashboard</Button>

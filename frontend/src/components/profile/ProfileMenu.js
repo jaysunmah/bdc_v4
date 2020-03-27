@@ -7,7 +7,6 @@ import { AppBar, Tabs, Tab, Box, Typography } from "@material-ui/core";
 
 class ProfileMenu extends Component {
   handleItemClick(dest){
-    console.log(dest)
     this.props.selectItem(dest);
   };
 

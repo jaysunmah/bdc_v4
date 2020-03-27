@@ -4,6 +4,8 @@ import {applyMiddleware, createStore} from "redux";
 import { Provider } from "react-redux";
 import {Route, Switch, Router} from 'react-router-dom';
 import thunk from "redux-thunk";
+import { ThemeProvider } from '@material-ui/core/styles';
+import { muiTheme } from './Theme'
 import history from './history';
 
 import bdcApp from "../../reducers";
@@ -17,8 +19,7 @@ import Profile from "./profile/Profile";
 import Dashboard from "./Dashboard";
 import Register from "./Register";
 import RHAccountView from "./profile/RHAccountView";
-import { ThemeProvider } from '@material-ui/core/styles';
-import { muiTheme } from './Theme'
+import CreatePortfolio from "./CreatePortfolio";
 
 const theme = {
   ...muiTheme
@@ -46,6 +47,7 @@ class App extends Component {
             <Route exact path="/profile/robinhood" component={RHAccountView} />
             <Route exact path={"/profile"} component={Profile} />
             <Route exact path={"/dashboard"} component={Dashboard} />
+            <Route exact path={"/create_portfolio"} component={CreatePortfolio} />
             <Route exact path={"/register"} component={Register} />
             <Route component={NotFound} />
           </Switch>

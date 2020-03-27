@@ -3,10 +3,14 @@ import BdcContainer from "./BdcContainer";
 import { dashboard } from "../../actions";
 import { connect } from "react-redux";
 import MaterialTable, {MTableToolbar} from 'material-table';
-import { AppBar, Tabs, Tab, Box, Typography } from "@material-ui/core";
+import {AppBar, Tabs, Tab, Box, Typography, TextField} from "@material-ui/core";
 import Icon from "@material-ui/core/Icon";
+import Button from "@material-ui/core/Button";
+
+import CreatePortfolio from "./CreatePortfolio";
 
 class Dashboard extends Component {
+
 
   componentDidMount() {
     this.props.loadAllPortfolios();
@@ -14,12 +18,16 @@ class Dashboard extends Component {
     this.props.loadAllOrders();
   }
 
+
+
   renderPortfolio() {
     const { orders, positions, selected_portfolio, selected_portfolio_id } = this.props.dashboard;
-    if (selected_portfolio === undefined) {
+    if (selected_portfolio_id === -1) {
       return (
         <div>TODO figure out what to show here</div>
       );
+    } else if (selected_portfolio_id === -2) {
+      return (<CreatePortfolio />);
     }
     const { nickname, brokerage } = selected_portfolio;
     let portfolio_positions = positions
@@ -113,25 +121,31 @@ class Dashboard extends Component {
             />
           }
         )}
+        <Tab
+          label={"Add New Portfolio"}
+          value={-2}
+          onClick={() => this.handlePortfolioSelect(-2)}
+        />
       </Tabs>
     );
   }
 
   render() {
+
     return (
       <BdcContainer>
         <h1>Dashboard</h1>
-          <AppBar position={"static"} color={"inherit"}>
-            {this.renderMenu()}
-            <Typography
-              component="div"
-              role="tabpanel"
-            >
-              <Box p={3}>
-                {this.renderPortfolio()}
-              </Box>
-            </Typography>
-          </AppBar>
+        <AppBar position={"static"} color={"inherit"}>
+          {this.renderMenu()}
+          <Typography
+            component="div"
+            role="tabpanel"
+          >
+            <Box p={3}>
+              {this.renderPortfolio()}
+            </Box>
+          </Typography>
+        </AppBar>
       </BdcContainer>
     );
   }

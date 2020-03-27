@@ -34,21 +34,26 @@ class BdcMenu extends Component {
     this.props.loadUser();
   }
 
+  renderCreatePortfolio() {
+    const { isAuthenticated } = this.props.auth;
+    return isAuthenticated && (<Button component={Link} to={"/create_portfolio"} color={"inherit"}>View/Edit Portfolios</Button>);
+  }
+
+  renderloginButton() {
+    const { isAuthenticated } = this.props.auth;
+    if (isAuthenticated) {
+      return (<Button component={ Link } to="/profile" color="inherit" onClick={() => this.props.selectItem("/profile")}>Profile</Button>);
+    }
+    return (<Button component={ Link } to="/login" color="inherit">Login</Button>);
+  }
+
+  renderDashboardItem() {
+    const { isAuthenticated } = this.props.auth;
+    return isAuthenticated && (<Button component={ Link } to="/dashboard" color="inherit">Dashboard</Button>);
+  }
+
   render() {
     const { classes } = this.props;
-    let loginLogoutMenuItem = (
-      <Button component={ Link } to="/login" color="inherit">Login</Button>
-    );
-    let dashboardMenuItem = "";
-
-    if (this.props.auth.isAuthenticated) {
-      loginLogoutMenuItem = (
-        <Button component={ Link } to="/profile" color="inherit" onClick={() => this.props.selectItem("/profile")}>Profile</Button>
-      );
-      dashboardMenuItem = (
-        <Button component={ Link } to="/dashboard" color="inherit">Dashboard</Button>
-      );
-    }
 
     return (
       <div className={classes.root}>
@@ -56,10 +61,11 @@ class BdcMenu extends Component {
         <Toolbar variant={"dense"}>
           <Button component={ Link } to="/" color="inherit">Home</Button>
           <Button component={ Link } to="/reviews" color="inherit">Reviews</Button>
-          {dashboardMenuItem}
+          {this.renderDashboardItem()}
+          {this.renderCreatePortfolio()}
           <Typography variant="h6" className={classes.title}>
           </Typography>
-          {loginLogoutMenuItem}
+          {this.renderloginButton()}
         </Toolbar>
       </AppBar>
     </div>

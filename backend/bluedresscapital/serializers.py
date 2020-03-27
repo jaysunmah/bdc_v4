@@ -10,6 +10,9 @@ class PortfolioUpsertSerializer(serializers.Serializer):
     nickname = serializers.CharField()
     brokerage = serializers.CharField()
 
+class PortfolioDeleteSerializer(serializers.Serializer):
+    portfolio_id = serializers.IntegerField()
+
 class PositionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Position

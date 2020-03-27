@@ -8,6 +8,11 @@ import Icon from "@material-ui/core/Icon";
 import Button from "@material-ui/core/Button";
 
 import CreatePortfolio from "./CreatePortfolio";
+import IconButton from "@material-ui/core/IconButton";
+import DeleteIcon from '@material-ui/icons/Delete';
+import EditIcon from '@material-ui/icons/Edit';
+import Tooltip from "@material-ui/core/Tooltip";
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 class Dashboard extends Component {
 
@@ -18,10 +23,15 @@ class Dashboard extends Component {
     this.props.loadAllOrders();
   }
 
-
+  handleDeletePortfolio() {
+    if (confirm("WARNING: Deleting this portfolio will also delete any existing orders and positions tied to it. Are you sure?")) {
+      const { selected_portfolio_id } = this.props.dashboard;
+      this.props.deletePortfolio(selected_portfolio_id);
+    }
+  }
 
   renderPortfolio() {
-    const { orders, positions, selected_portfolio, selected_portfolio_id } = this.props.dashboard;
+    const { orders, positions, selected_portfolio, selected_portfolio_id, deleting_portfolio } = this.props.dashboard;
     if (selected_portfolio_id === -1) {
       return (
         <div>TODO figure out what to show here</div>
@@ -57,8 +67,23 @@ class Dashboard extends Component {
     ];
     return (
       <div>
-        <h1>{nickname}</h1>
-        <p>{brokerage}</p>
+        <h1>
+          {nickname}
+          <Tooltip title="Edit">
+            <IconButton aria-label="edit">
+              <EditIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip
+            title="Delete"
+            onClick={this.handleDeletePortfolio.bind(this)}
+          >
+            <IconButton aria-label="delete">
+              {deleting_portfolio ? <CircularProgress size={18}/> : <DeleteIcon /> }
+            </IconButton>
+          </Tooltip>
+        </h1>
+
         <MaterialTable
           title={"Positions"}
           columns={positionsColumns}
@@ -131,17 +156,16 @@ class Dashboard extends Component {
   }
 
   render() {
-
     return (
       <BdcContainer>
         <h1>Dashboard</h1>
-        <AppBar position={"static"} color={"inherit"}>
+        <AppBar position={"static"}>
           {this.renderMenu()}
           <Typography
             component="div"
             role="tabpanel"
           >
-            <Box p={3}>
+            <Box p={3} style={{backgroundColor: "white", color: "black"}}>
               {this.renderPortfolio()}
             </Box>
           </Typography>
@@ -162,7 +186,8 @@ const mapDispatchToProps = dispatch => {
     loadAllPortfolios: () => dispatch(dashboard.loadAllPortfolios()),
     loadAllPositions: () => dispatch(dashboard.loadAllPositions()),
     loadAllOrders: () => dispatch(dashboard.loadAllOrders()),
-    selectPortfolio: (port_id) => dispatch(dashboard.selectPortfolio(port_id))
+    selectPortfolio: (port_id) => dispatch(dashboard.selectPortfolio(port_id)),
+    deletePortfolio: (port_id) => dispatch(dashboard.deletePortfolio(port_id))
   }
 }
 

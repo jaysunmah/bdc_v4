@@ -7,7 +7,8 @@ const initialState = {
   loaded_orders: false,
   selected_portfolio: undefined,
   selected_portfolio_id: -1,
-  status: "Loading portfolio info..."
+  status: "Loading portfolio info...",
+  deleting_portfolio: false,
 }
 
 export default function dashboard(state=initialState, action) {
@@ -22,6 +23,10 @@ export default function dashboard(state=initialState, action) {
       let portfolios = state['portfolios'];
       let selected_portfolio = portfolios[action.port_id];
       return {...state, selected_portfolio, selected_portfolio_id: action.port_id };
+    case 'DELETING_PORTFOLIO':
+      return {...state, deleting_portfolio: true };
+    case 'DELETED_PORTFOLIO':
+      return {...state, deleting_portfolio: false, portfolios: action.portfolios, selected_portfolio_id: -1};
     case 'ERROR':
       return {...state, status: action.error_message };
     default:

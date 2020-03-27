@@ -76,3 +76,28 @@ export const selectPortfolio = (port_id) => {
     dispatch({ type: "SELECT_PORTFOLIO", port_id })
   }
 }
+
+export const deletePortfolio = (port_id) => {
+  return (dispatch, getState) => {
+    dispatch({ type: "DELETING_PORTFOLIO" });
+    let headers = getHeaderWithAuthToken(getState);
+    let body = JSON.stringify({ portfolio_id: port_id });
+    fetch("/api/bdc/portfolio/delete/", { headers, method: "POST", body })
+      .then(res=> {
+        if (res.status == 200) {
+          return res.json()
+        }
+        throw "Internal server error in getting orders"
+    })
+      .then(data => {
+        if (data.error) {
+          dispatch({ type: "ERROR", error_message: data.error});
+        } else {
+          dispatch({ type: "DELETED_PORTFOLIO", portfolios: data });
+        }
+      })
+      .catch(e => {
+        dispatch({ type: "ERROR", error_message: e })
+      })
+  }
+}

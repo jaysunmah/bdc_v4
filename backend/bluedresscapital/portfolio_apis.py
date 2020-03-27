@@ -7,9 +7,9 @@ from rest_framework.response import Response
 import pandas_market_calendars as mcal
 import copy
 
-from .serializers import PortfolioSerializer, PortfolioUpsertSerializer
+from .serializers import PortfolioSerializer, PortfolioUpsertSerializer, PortfolioDeleteSerializer
 from .models import Portfolio, Brokerage, Order, StockQuote
-
+import time
 
 def get_portfolios(request, user):
     if 'brokerage' in request.GET:
@@ -43,6 +43,16 @@ class PortfolioAPI(generics.GenericAPIView):
             portfolio = Portfolio(bdc_user=self.request.user, nickname=serializer.data['nickname'], brokerage=brokerage)
         portfolio.save()
         return Response(PortfolioSerializer(portfolio).data)
+
+class DeletePortfolioAPI(generics.GenericAPIView):
+    url = "bdc/portfolio/delete/"
+    serializer_class = PortfolioDeleteSerializer
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        Portfolio.objects.get(id=serializer.data['portfolio_id']).delete()
+        return Response(PortfolioSerializer(Portfolio.objects.filter(bdc_user=self.request.user), many=True).data)
 
 class PortfolioHistoryAPI(generics.GenericAPIView):
     url = "bdc/portfolio/history/"

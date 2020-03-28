@@ -4,10 +4,32 @@ import Icon from "@material-ui/core/Icon";
 import {connect} from "react-redux";
 import {KeyboardDatePicker, MuiPickersUtilsProvider} from "@material-ui/pickers";
 import DateFnsUtils from "@date-io/date-fns";
+import {dashboard} from "../../../actions";
 
 class TransfersTable extends Component {
+  handleAddTransfer({ date, action, amount, type }) {
+    date = date.toISOString().substr(0, 10);
+    const { brokerage } = this.props.dashboard.selected_portfolio;
+    this.props.saveTransfer({ date, action, amount, brokerage });
+  }
+
+  handleDeleteTransfer({ tableData }) {
+    const { id } = tableData;
+    const { transfers } = this.props.dashboard;
+    let transfer = transfers[id];
+    this.props.deleteTransfer(transfer['uid']);
+  }
+
+  handleEditTransfer({ date, amount, action }, { tableData }) {
+    const { id } = tableData;
+    const { transfers } = this.props.dashboard;
+    let uid = transfers[id]['uid'];
+    this.props.editTransfer(uid, { date, amount, action });
+  }
+
   render() {
-    const { transfers, selected_portfolio_id } = this.props.dashboard;
+    const { transfers, selected_portfolio_id, processing_transfer, selected_portfolio } = this.props.dashboard;
+    const { brokerage } = selected_portfolio;
     let portfolio_transfers = transfers
       .filter(({ portfolio }) => (portfolio+"")===(selected_portfolio_id+""))
       .map(({ amount, is_deposit_type, date, manually_added }) => {
@@ -35,43 +57,30 @@ class TransfersTable extends Component {
     ];
     return (
       <MaterialTable
+        isLoading={processing_transfer}
         title={"Transfers"}
         columns={transfer_columns}
         data={portfolio_transfers}
         editable={{
           isEditable: ({ type }) => type === "MANUAL",
           isDeletable: ({ type }) => type === "MANUAL",
-          onRowAdd: ({ date, action, amount, type }) =>
+          onRowAdd: (data) =>
             new Promise((resolve, reject) => {
-              console.log(date, action, amount, type);
+              this.handleAddTransfer(data);
               resolve();
             }),
           onRowUpdate: (newData, oldData) =>
             new Promise((resolve, reject) => {
-              setTimeout(() => {
-                {
-                  /* const data = this.state.data;
-                  const index = data.indexOf(oldData);
-                  data[index] = newData;
-                  this.setState({ data }, () => resolve()); */
-                }
-                resolve();
-              }, 1000);
+              this.handleEditTransfer(newData, oldData);
+              resolve();
             }),
-          onRowDelete: oldData =>
+          onRowDelete: data =>
             new Promise((resolve, reject) => {
-              setTimeout(() => {
-                {
-                  /* let data = this.state.data;
-                  const index = data.indexOf(oldData);
-                  data.splice(index, 1);
-                  this.setState({ data }, () => resolve()); */
-                }
-                resolve();
-              }, 1000);
+              this.handleDeleteTransfer(data);
+              resolve();
             })
         }}
-        actions={[
+        actions={brokerage === "web" ? [] : [
           {
             icon: () => {
               if (true) {
@@ -99,6 +108,9 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
   return {
+    saveTransfer: (data) => dispatch(dashboard.saveTransfer(data)),
+    deleteTransfer: (uid) => dispatch(dashboard.deleteTransfer(uid)),
+    editTransfer: (uid, data) => dispatch(dashboard.editTransfer(uid, data))
   }
 }
 

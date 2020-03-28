@@ -63,6 +63,19 @@ class TransferManualSaveSerializer(serializers.Serializer):
             raise serializers.ValidationError("Invalid action: " + value)
         return value
 
+class TransferManualDeleteSerializer(serializers.Serializer):
+    uid = serializers.CharField()
+
+class TransferManualEditSerializer(serializers.Serializer):
+    uid = serializers.CharField()
+    date = serializers.DateField()
+    action = serializers.CharField()
+    amount = serializers.DecimalField(10, 4)
+
+    def validate_action(self, value):
+        if value != "WITHDRAW" and value != "DEPOSIT":
+            raise serializers.ValidationError("Invalid action: " + value)
+        return value
 
 class BrokerageInputSerializer(serializers.Serializer):
     brokerage = serializers.CharField()

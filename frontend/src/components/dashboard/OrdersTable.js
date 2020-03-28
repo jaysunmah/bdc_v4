@@ -2,10 +2,13 @@ import React, { Component } from 'react'
 import MaterialTable from "material-table";
 import Icon from "@material-ui/core/Icon";
 import {connect} from "react-redux";
+import {KeyboardDatePicker, MuiPickersUtilsProvider} from "@material-ui/pickers";
+import DateFnsUtils from "@date-io/date-fns";
 
 class OrdersTable extends Component {
   render() {
-        const { orders, selected_portfolio_id } = this.props.dashboard;
+    const { orders, selected_portfolio_id, selected_portfolio } = this.props.dashboard;
+    const { brokerage } = selected_portfolio;
     let portfolio_orders = orders
       .filter(({ portfolio }) => (portfolio+"")===(selected_portfolio_id+""))
       .map(({ stock, quantity, value, is_buy_type, date }) => {
@@ -15,17 +18,66 @@ class OrdersTable extends Component {
       });
 
     let ordersColumns = [
-      { title: 'Date', field: 'date' },
+      { title: 'Date', field: 'date' , editComponent: props => (
+          <MuiPickersUtilsProvider utils={DateFnsUtils}>
+            <KeyboardDatePicker
+              clearable
+              value={props.value}
+              placeholder="2017-06-24"
+              onChange={(new_date) => { props.onChange(new_date) }}
+              format="yyyy-MM-dd"
+            />
+          </MuiPickersUtilsProvider>
+        )},
       { title: 'Stock', field: 'stock' },
-      { title: 'Type', field: 'type' },
-      { title: 'Quantity', field: 'quantity' },
-      { title: 'Price', field: 'price' },
-      { title: 'Value', field: 'value' }
+      { title: 'Type', field: 'type', lookup: { BUY: "BUY", SELL: "SELL" } },
+      { title: 'Quantity', field: 'quantity', type: "numeric" },
+      { title: 'Price', field: 'price', type: "numeric" },
+      { title: 'Value', field: 'value', type: "numeric" }
     ];
     return (
       <MaterialTable
         title={"Orders"}
         columns={ordersColumns}
+        editable={brokerage != "web" ? null : {
+          isEditable: rowData => rowData.name === "a", // only name(a) rows would be editable
+          isDeletable: rowData => rowData.name === "b", // only name(a) rows would be deletable
+          onRowAdd: newData =>
+            new Promise((resolve, reject) => {
+              setTimeout(() => {
+                {
+                  /* const data = this.state.data;
+                  data.push(newData);
+                  this.setState({ data }, () => resolve()); */
+                }
+                resolve();
+              }, 1000);
+            }),
+          onRowUpdate: (newData, oldData) =>
+            new Promise((resolve, reject) => {
+              setTimeout(() => {
+                {
+                  /* const data = this.state.data;
+                  const index = data.indexOf(oldData);
+                  data[index] = newData;
+                  this.setState({ data }, () => resolve()); */
+                }
+                resolve();
+              }, 1000);
+            }),
+          onRowDelete: oldData =>
+            new Promise((resolve, reject) => {
+              setTimeout(() => {
+                {
+                  /* let data = this.state.data;
+                  const index = data.indexOf(oldData);
+                  data.splice(index, 1);
+                  this.setState({ data }, () => resolve()); */
+                }
+                resolve();
+              }, 1000);
+            })
+        }}
         data={portfolio_orders}
         actions={[
           {

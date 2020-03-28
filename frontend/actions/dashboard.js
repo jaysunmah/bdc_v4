@@ -1,8 +1,10 @@
 import {getHeaderWithAuthToken} from "./helpers";
 
-let fetchGetWrapper = (dispatch, getState, url, cb) => {
+let fetchWrapper = (dispatch, getState, method, url, body, cb) => {
   let headers = getHeaderWithAuthToken(getState);
-  return fetch(url, { headers, method: "GET" })
+  body = JSON.stringify(body);
+  let payload = body === "{}" ? { headers, method } : { headers, method, body };
+  fetch(url, payload)
     .then(res => {
       if (res.status === 200) {
         return res.json()
@@ -23,7 +25,7 @@ let fetchGetWrapper = (dispatch, getState, url, cb) => {
 
 export const loadAllPortfolios = () => {
   return (dispatch, getState) => {
-    return fetchGetWrapper(dispatch, getState, "/api/bdc/portfolio/", (data) => {
+    fetchWrapper(dispatch, getState, "GET", "/api/bdc/portfolio/",{}, (data) => {
       dispatch({ type: "LOADED_PORTFOLIOS", portfolios: data });
     });
   }
@@ -31,7 +33,7 @@ export const loadAllPortfolios = () => {
 
 export const loadAllPositions = () => {
   return (dispatch, getState) => {
-    return fetchGetWrapper(dispatch, getState, "/api/bdc/positions/", (data) => {
+    fetchWrapper(dispatch, getState, "GET", "/api/bdc/positions/", {}, (data) => {
       dispatch({ type: "LOADED_POSITIONS", positions: data });
     });
   }
@@ -39,7 +41,7 @@ export const loadAllPositions = () => {
 
 export const loadAllOrders = () => {
   return (dispatch, getState) => {
-    return fetchGetWrapper(dispatch, getState, "/api/bdc/orders/", (data) => {
+    fetchWrapper(dispatch, getState, "GET", "/api/bdc/orders/", {}, (data) => {
       dispatch({ type: "LOADED_ORDERS", orders: data });
     });
   }
@@ -47,7 +49,7 @@ export const loadAllOrders = () => {
 
 export const loadAllTransfers = () => {
   return (dispatch, getState) => {
-    return fetchGetWrapper(dispatch, getState, "/api/bdc/transfers/", (data) => {
+    fetchWrapper(dispatch, getState, "GET", "/api/bdc/transfers/", {}, (data) => {
       dispatch({ type: "LOADED_TRANSFERS", transfers: data })
     });
   }
@@ -116,11 +118,35 @@ export const savePortfolio = (name, type) => {
   }
 }
 
-export const saveTransfer = (date, action, amount, type) => {
+export const saveTransfer = ({ date, action, amount, brokerage }) => {
   return (dispatch, getState) => {
     dispatch({ type: "SAVING_TRANSFER" });
-    let headers = getHeaderWithAuthToken(getState);
-    let body = JSON.stringify({});
+    return fetchWrapper(dispatch, getState, "POST", "/api/bdc/transfers/manual/save/", {
+      date, action, amount, brokerage
+    }, (data) => {
+      dispatch({ type: "SAVED_TRANSFER", transfers: data })
+    });
   }
 }
 
+export const deleteTransfer = (uid) => {
+  return (dispatch, getState) => {
+    dispatch({ type: "DELETING_TRANSFER" });
+    return fetchWrapper(dispatch, getState, "POST", "/api/bdc/transfers/manual/delete/", {
+      uid
+    }, (data) => {
+      dispatch({ type: "DELETED_TRANSFER", transfers: data })
+    })
+  }
+}
+
+export const editTransfer = (uid, { date, action, amount }) => {
+  return (dispatch, getState) => {
+    dispatch({ type: "EDITING_TRANSFER" });
+    return fetchWrapper(dispatch, getState, "POST", "/api/bdc/transfers/manual/edit/", {
+      uid, date, action, amount
+    }, (data) => {
+      dispatch({ type: "EDITED_TRANSFER", transfers: data })
+    })
+  }
+}

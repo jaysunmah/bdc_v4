@@ -1,7 +1,7 @@
 from rest_framework import generics
 from rest_framework.response import Response
 
-from .serializers import TransferSerializer, BrokerageInputSerializer, TransferManualSaveSerializer
+from .serializers import TransferSerializer, BrokerageInputSerializer, TransferManualSaveSerializer, TransferManualDeleteSerializer, TransferManualEditSerializer
 from .models import Portfolio, Brokerage, Transfer
 from backend.tdameritrade.util.helpers import upsert_transfers as upsert_tda_transfers
 from backend.tdameritrade.models import TDAccount
@@ -51,7 +51,7 @@ class TransfersAPI(generics.GenericAPIView):
         return Response({"error": "invalid brokerage type"})
 
 class SaveManualTransferAPI(generics.GenericAPIView):
-    url = "bdc/transfers/manual_save/"
+    url = "bdc/transfers/manual/save/"
     serializer_class = TransferManualSaveSerializer
 
     def post(self, request):
@@ -68,4 +68,33 @@ class SaveManualTransferAPI(generics.GenericAPIView):
             date=serializer.data['date']
         )
         t.save()
-        return Response(TransferSerializer(Transfer.objects.filter(portfolio=portfolio), many=True).data)
+        portfolios = Portfolio.objects.filter(bdc_user=self.request.user)
+        return Response(TransferSerializer(Transfer.objects.filter(portfolio__in=portfolios).order_by('-date'), many=True).data)
+
+class DeleteManualTransferAPI(generics.GenericAPIView):
+    url = "bdc/transfers/manual/delete/"
+    serializer_class = TransferManualDeleteSerializer
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        transfer = Transfer.objects.get(uid=serializer.data['uid'])
+        transfer.delete()
+        portfolios = Portfolio.objects.filter(bdc_user=self.request.user)
+
+        return Response(TransferSerializer(Transfer.objects.filter(portfolio__in=portfolios).order_by('-date'), many=True).data)
+
+class EditManualTransferAPI(generics.GenericAPIView):
+    url = "bdc/transfers/manual/edit/"
+    serializer_class = TransferManualEditSerializer
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        t = Transfer.objects.get(uid=serializer.data['uid'])
+        t.amount = serializer.data['amount']
+        t.is_deposit_type = serializer.data['action'] == 'DEPOSIT'
+        t.date = serializer.data['date']
+        t.save()
+        portfolios = Portfolio.objects.filter(bdc_user=self.request.user)
+        return Response(TransferSerializer(Transfer.objects.filter(portfolio__in=portfolios).order_by('-date'), many=True).data)

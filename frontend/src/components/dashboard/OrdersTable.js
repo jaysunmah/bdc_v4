@@ -82,7 +82,7 @@ class OrdersTable extends Component {
       { title: 'Quantity', field: 'quantity', type: "numeric" },
       { title: 'Price', field: 'price', type: "numeric" },
       { title: 'Value', field: 'value', type: "numeric", editable: 'never' },
-      { title: 'Type', field: 'type', editable: 'never' }
+      { title: 'Type', field: 'type', editable: 'never', initialEditValue: 'MANUAL' }
     ];
     return (
       <MaterialTable

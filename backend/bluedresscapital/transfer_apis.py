@@ -1,7 +1,7 @@
 from rest_framework import generics
 from rest_framework.response import Response
 
-from .serializers import TransferSerializer, BrokerageInputSerializer
+from .serializers import TransferSerializer, BrokerageInputSerializer, TransferManualSaveSerializer
 from .models import Portfolio, Brokerage, Transfer
 from backend.tdameritrade.util.helpers import upsert_transfers as upsert_tda_transfers
 from backend.tdameritrade.models import TDAccount
@@ -9,6 +9,8 @@ from backend.tdameritrade.tdascraper import TDAClient
 from backend.robinhood.util.helpers import upsert_transfers as upsert_rh_transfers
 from backend.robinhood.models import RHAccount
 from backend.robinhood.rhscraper import RHClient
+
+import time
 
 class TransfersAPI(generics.GenericAPIView):
     url = "bdc/transfers/"
@@ -47,3 +49,23 @@ class TransfersAPI(generics.GenericAPIView):
             return upsert_tda_transfers(TDAClient(td_account), portfolio)
 
         return Response({"error": "invalid brokerage type"})
+
+class SaveManualTransferAPI(generics.GenericAPIView):
+    url = "bdc/transfers/manual_save/"
+    serializer_class = TransferManualSaveSerializer
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        brokerage = Brokerage.objects.get(name=serializer.data['brokerage'])
+        portfolio = Portfolio.objects.get(bdc_user=self.request.user, brokerage=brokerage)
+        t = Transfer(
+            uid="manual_" + str(time.time_ns()),
+            portfolio=portfolio,
+            amount=serializer.data['amount'],
+            is_deposit_type=serializer.data['action'] == "DEPOSIT",
+            manually_added=True,
+            date=serializer.data['date']
+        )
+        t.save()
+        return Response(TransferSerializer(Transfer.objects.filter(portfolio=portfolio), many=True).data)

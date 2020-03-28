@@ -116,3 +116,11 @@ export const savePortfolio = (name, type) => {
   }
 }
 
+export const saveTransfer = (date, action, amount, type) => {
+  return (dispatch, getState) => {
+    dispatch({ type: "SAVING_TRANSFER" });
+    let headers = getHeaderWithAuthToken(getState);
+    let body = JSON.stringify({});
+  }
+}
+

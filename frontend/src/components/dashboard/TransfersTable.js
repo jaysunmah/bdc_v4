@@ -2,6 +2,8 @@ import React, {Component} from 'react'
 import MaterialTable from "material-table";
 import Icon from "@material-ui/core/Icon";
 import {connect} from "react-redux";
+import {KeyboardDatePicker, MuiPickersUtilsProvider} from "@material-ui/pickers";
+import DateFnsUtils from "@date-io/date-fns";
 
 class TransfersTable extends Component {
   render() {
@@ -16,10 +18,20 @@ class TransfersTable extends Component {
       });
 
     let transfer_columns = [
-      { title: 'Date', field: 'date' },
-      { title: 'Action', field: 'action' },
-      { title: 'Amount', field: 'amount' },
-      { title: 'Type', field: 'type' }
+      { title: 'Date', field: 'date', editComponent: props => (
+          <MuiPickersUtilsProvider utils={DateFnsUtils}>
+            <KeyboardDatePicker
+              clearable
+              value={props.value}
+              placeholder="2017-06-24"
+              onChange={(new_date) => { props.onChange(new_date) }}
+              format="yyyy-MM-dd"
+            />
+          </MuiPickersUtilsProvider>
+        )},
+      { title: 'Action', field: 'action', lookup: { WITHDRAW: 'WITHDRAW', DEPOSIT: 'DEPOSIT' } },
+      { title: 'Amount', field: 'amount', type: 'numeric' },
+      { title: 'Type', field: 'type', initialEditValue: 'MANUAL', editable: 'never' }
     ];
     return (
       <MaterialTable
@@ -29,16 +41,10 @@ class TransfersTable extends Component {
         editable={{
           isEditable: ({ type }) => type === "MANUAL",
           isDeletable: ({ type }) => type === "MANUAL",
-          onRowAdd: newData =>
+          onRowAdd: ({ date, action, amount, type }) =>
             new Promise((resolve, reject) => {
-              setTimeout(() => {
-                {
-                  /* const data = this.state.data;
-                  data.push(newData);
-                  this.setState({ data }, () => resolve()); */
-                }
-                resolve();
-              }, 1000);
+              console.log(date, action, amount, type);
+              resolve();
             }),
           onRowUpdate: (newData, oldData) =>
             new Promise((resolve, reject) => {

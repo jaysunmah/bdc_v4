@@ -52,5 +52,17 @@ class TransferSerializer(serializers.ModelSerializer):
         model = Transfer
         fields = ('uid', 'portfolio', 'amount', 'is_deposit_type', 'manually_added', 'date')
 
+class TransferManualSaveSerializer(serializers.Serializer):
+    brokerage = serializers.CharField()
+    date = serializers.DateField()
+    action = serializers.CharField()
+    amount = serializers.DecimalField(10, 4)
+
+    def validate_action(self, value):
+        if value != "WITHDRAW" and value != "DEPOSIT":
+            raise serializers.ValidationError("Invalid action: " + value)
+        return value
+
+
 class BrokerageInputSerializer(serializers.Serializer):
     brokerage = serializers.CharField()

@@ -3,7 +3,7 @@ import { Menu, Dropdown } from 'semantic-ui-react'
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import {auth, menu, tdameritrade} from '../../actions';
-import Dashboard from "./Dashboard";
+import Dashboard from "./dashboard/Dashboard";
 import { withStyles } from "@material-ui/core/styles";
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';

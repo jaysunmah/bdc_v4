@@ -14,10 +14,7 @@ class RHClient:
 
     def get_positions(self):
         response = self.rh.session.get(endpoints.positions()).json()
-        res = response['results']
-        while response['next'] is not None and response['next'] != "None":
-            response = self.rh.session.get(response['next']).json()
-            res += response['results']
+        res = self.get_full_results(response)
 
         def get_position(position):
             stock = get_stock_from_instrument_id(get_instrument_id_from_url(position['instrument']))
@@ -32,10 +29,7 @@ class RHClient:
 
     def get_orders(self):
         response = self.rh.session.get(endpoints.orders()).json()
-        res = response['results']
-        while response['next'] is not None:
-            response = self.rh.session.get(response['next']).json()
-            res += response['results']
+        res = self.get_full_results(response)
 
         def filter_order(order):
             return len(order['executions']) > 0
@@ -50,6 +44,29 @@ class RHClient:
                 'value': Decimal(execution['price'])
             }
         return [get_order(order) for order in res if filter_order(order)]
+
+    def get_transfers(self):
+        response = self.rh.session.get(endpoints.ach("transfers")).json()
+        res = self.get_full_results(response)
+
+        def filter_transfer(transfer):
+            return transfer['state'] == 'completed' and (transfer['direction'] == 'deposit' or transfer['direction'] == 'withdraw')
+
+        def get_transfer(transfer):
+            return {
+                'uid': transfer['id'],
+                'direction': transfer['direction'],
+                'amount': Decimal(transfer['amount']),
+                'date': transfer['expected_landing_date']
+            }
+        return [get_transfer(t) for t in res if filter_transfer(t)]
+
+    def get_full_results(self, response):
+        res = response['results']
+        while response['next'] is not None:
+            response = self.rh.session.get(response['next']).json()
+            res += response['results']
+        return res
 
 def get_latest_stock_price(ticker):
     try:

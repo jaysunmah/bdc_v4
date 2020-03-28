@@ -95,6 +95,15 @@ class TDAClient:
 			}
 		return [get_trade(t) for t in res if filter_trade(t)]
 
+	def get_transfers(self):
+		self.authenticate()
+		url = self.get_transactions_url()
+		res = requests.get(url, headers=self.get_auth_header()).json()
+		for r in res:
+			print("")
+			print(r)
+			print("")
+
 	def get_historical_quote(self, ticker: str, start: datetime.datetime, end: datetime.datetime):
 		self.authenticate()
 		url = self.get_td_quote_url(ticker)

@@ -46,4 +46,4 @@ class OrdersAPI(generics.GenericAPIView):
             td_account = TDAccount.objects.get(bdc_user=self.request.user)
             return upsert_tda_orders(TDAClient(td_account), portfolio)
 
-        return Response({"status": "TODO"})
+        return Response(OrderSerializer(Order.objects.filter(portfolio=portfolio).order_by('-date'), many=True).data)

@@ -29,3 +29,6 @@ def upsert_orders(td_client: TDAClient, portfolio: Portfolio) -> Response:
     orders = [get_order(t) for t in transactions]
     Order.objects.bulk_create(orders, ignore_conflicts=True)
     return Response(OrderSerializer(orders, many=True).data)
+
+def upsert_transfers(td_client: TDAClient, portfolio: Portfolio) -> Response:
+    return Response({"TOTO": "TD!!!"})

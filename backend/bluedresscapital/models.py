@@ -75,3 +75,11 @@ class Order(models.Model):
     # Assume an order type can only be buy or sell
     is_buy_type = models.BooleanField()
     date = models.DateTimeField()
+
+class Transfer(models.Model):
+    uid = models.CharField(max_length=100, primary_key=True)
+    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
+    amount = models.DecimalField(decimal_places=4, max_digits=10)
+    is_deposit_type = models.BooleanField()
+    manually_added = models.BooleanField()
+    date = models.DateField()

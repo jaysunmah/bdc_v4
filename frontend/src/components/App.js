@@ -16,7 +16,7 @@ import Login from "./Login";
 import TDAccountView from "./profile/TDAccountView";
 import NotFound from "./NotFound";
 import Profile from "./profile/Profile";
-import Dashboard from "./Dashboard";
+import Dashboard from "./dashboard/Dashboard";
 import Register from "./Register";
 import RHAccountView from "./profile/RHAccountView";
 

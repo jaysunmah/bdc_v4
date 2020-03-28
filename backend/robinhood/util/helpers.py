@@ -3,8 +3,8 @@ import datetime
 import pytz
 from rest_framework.response import Response
 
-from backend.bluedresscapital.models import Portfolio, Position, Stock, Order
-from backend.bluedresscapital.serializers import PositionSerializer, OrderSerializer
+from backend.bluedresscapital.models import Portfolio, Position, Stock, Order, Transfer
+from backend.bluedresscapital.serializers import PositionSerializer, OrderSerializer, TransferSerializer
 from backend.robinhood.rhscraper import RHClient
 from backend.common.upsert_position import upsert_position
 
@@ -16,7 +16,7 @@ def upsert_positions(rh_client: RHClient, portfolio: Portfolio) -> Response:
     return Response(PositionSerializer(all_positions, many=True).data)
 
 def upsert_orders(rh_client: RHClient, portfolio: Portfolio) -> Response:
-    transactions = rh_client.get_orders()
+    rh_orders = rh_client.get_orders()
     def get_order(t):
         stock, created = Stock.objects.get_or_create(ticker=t['stock'], defaults={'name': ''})
         if created:
@@ -35,7 +35,20 @@ def upsert_orders(rh_client: RHClient, portfolio: Portfolio) -> Response:
             value=t['value'],
             is_buy_type=t['instruction'] == 'buy',
             date=date)
-
-    orders = [get_order(t) for t in transactions]
+    orders = [get_order(t) for t in rh_orders]
     Order.objects.bulk_create(orders, ignore_conflicts=True)
     return Response(OrderSerializer(orders, many=True).data)
+
+def upsert_transfers(rh_client: RHClient, portfolio: Portfolio) -> Response:
+    rh_transfers = rh_client.get_transfers()
+    def get_transfer(t):
+        return Transfer(
+            uid=t['uid'],
+            portfolio=portfolio,
+            amount=t['amount'],
+            is_deposit_type=t['direction'] == 'deposit',
+            date=datetime.date.fromisoformat(t['date'])
+        )
+    transfers = [get_transfer(t) for t in rh_transfers]
+    Transfer.objects.bulk_create(transfers, ignore_conflicts=True)
+    return Response(TransferSerializer(transfers, many=True).data)

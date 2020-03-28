@@ -2,9 +2,11 @@ const initialState = {
   portfolios: {},
   positions: [],
   orders: [],
+  transfers: [],
   loaded_portfolios: false,
   loaded_positions: false,
   loaded_orders: false,
+  loaded_transfers: false,
   selected_portfolio: undefined,
   selected_portfolio_id: -1,
   status: "Loading portfolio info...",
@@ -20,6 +22,8 @@ export default function dashboard(state=initialState, action) {
       return {...state, loaded_positions: true, positions: action.positions, status: "loaded positions"};
     case 'LOADED_ORDERS':
       return {...state, loaded_orders: true, orders: action.orders, status: "loaded orders"};
+    case 'LOADED_TRANSFERS':
+      return {...state, loaded_transfers: true, transfers: action.transfers, status: "loaded transfers"};
     case 'SELECT_PORTFOLIO':
       let portfolios = state['portfolios'];
       let selected_portfolio = portfolios[action.port_id];

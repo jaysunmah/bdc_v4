@@ -11,10 +11,12 @@ from .serializers import PortfolioSerializer, PortfolioUpsertSerializer, Portfol
 from .models import Portfolio, Brokerage, Order, StockQuote
 from backend.tdameritrade.util.helpers import upsert_orders as upsert_tda_orders
 from backend.tdameritrade.util.helpers import upsert_positions as upsert_tda_positions
+from backend.tdameritrade.util.helpers import upsert_transfers as upsert_tda_transfers
 from backend.tdameritrade.models import TDAccount
 from backend.tdameritrade.tdascraper import TDAClient
 from backend.robinhood.util.helpers import upsert_orders as upsert_rh_orders
 from backend.robinhood.util.helpers import upsert_positions as upsert_rh_positions
+from backend.robinhood.util.helpers import upsert_transfers as upsert_rh_transfers
 from backend.robinhood.models import RHAccount
 from backend.robinhood.rhscraper import RHClient
 
@@ -59,11 +61,13 @@ class PortfolioAPI(generics.GenericAPIView):
             td_client = TDAClient(td_account)
             upsert_tda_orders(td_client, portfolio)
             upsert_tda_positions(td_client, portfolio)
+            upsert_tda_transfers(td_client, portfolio)
         elif brokerage.is_rh():
             rh_account = RHAccount.objects.get(bdc_user=self.request.user)
             rh_client = RHClient(rh_account)
             upsert_rh_orders(rh_client, portfolio)
             upsert_rh_positions(rh_client, portfolio)
+            upsert_rh_transfers(rh_client, portfolio)
 
         return Response({
             "new_portfolio": PortfolioSerializer(portfolio).data,
@@ -129,8 +133,6 @@ class PortfolioHistoryAPI(generics.GenericAPIView):
         for i in range(len(order_buckets)):
             order_bucket = order_buckets[i]
             date_obj = datetime.date.fromisoformat(str(dates[i])[:10])
-            # TODO remove me!
-            print(date_obj)
             for order in order_bucket:
                 ticker = order.stock
                 if ticker not in portfolio:
@@ -156,25 +158,7 @@ class PortfolioHistoryAPI(generics.GenericAPIView):
                             print("using stock price", stock_price.price, "on date", stock_price.date)
                         else:
                             raise Exception("couldn't find any prices for stock %s on date %s" % (stock.ticker, str(date_obj)))
-
-                    if str(date_obj) in ['2019-11-13', '2019-11-14', '2019-11-15']:
-                        if portfolio[stock] != Decimal(0):
-                            print("{},{},{}".format(stock.ticker, stock_price.price, portfolio[stock]))
-
                     stocks_value += stock_price.price * portfolio[stock]
-
-            if str(date_obj) in ['2019-11-13', '2019-11-14', '2019-11-15']:
-                prev_portfolio = portfolio_snapshots[-1]
-                for stock in portfolio:
-                    if stock in prev_portfolio:
-                        if prev_portfolio[stock] != portfolio[stock]:
-                            print(stock, prev_portfolio[stock], " ---> ", portfolio[stock])
-                    else:
-                        print(stock, 0, " ---> ", portfolio[stock])
-                print(str(date_obj), cash, stocks_value)
-                for order in order_bucket:
-                    print(order.stock, order.is_buy_type, order.quantity, order.value)
-                print("")
 
             portfolio_value.append({'date': date_obj, 'cash': cash, 'stocks_value': stocks_value})
             portfolio_snapshots.append(copy.deepcopy(portfolio))

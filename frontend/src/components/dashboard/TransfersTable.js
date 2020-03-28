@@ -7,23 +7,38 @@ import DateFnsUtils from "@date-io/date-fns";
 import {dashboard} from "../../../actions";
 
 class TransfersTable extends Component {
-  handleAddTransfer({ date, action, amount, type }) {
+  getTransferUid({ date, action, amount }) {
+    const { transfers, selected_portfolio_id, processing_transfer, selected_portfolio } = this.props.dashboard;
+    let curr_action = action == "DEPOSIT";
+    let curr_amount = amount;
+    let curr_date = date;
+
+    let portfolio_transfers = transfers
+      .filter(({ portfolio, amount, is_deposit_type, date, manually_added }) =>
+        manually_added &&
+        (portfolio+"")===(selected_portfolio_id+"") &&
+        date.substr(0, 10) === curr_date &&
+        parseFloat(amount) === curr_amount &&
+        is_deposit_type === curr_action
+      );
+
+    return portfolio_transfers[0]['uid'];
+  }
+
+  handleAddTransfer({ date, action, amount }) {
+    date = date ? date : new Date();
     date = date.toISOString().substr(0, 10);
     const { brokerage } = this.props.dashboard.selected_portfolio;
     this.props.saveTransfer({ date, action, amount, brokerage });
   }
 
-  handleDeleteTransfer({ tableData }) {
-    const { id } = tableData;
-    const { transfers } = this.props.dashboard;
-    let transfer = transfers[id];
-    this.props.deleteTransfer(transfer['uid']);
+  handleDeleteTransfer(data) {
+    this.props.deleteTransfer(this.getTransferUid(data));
   }
 
-  handleEditTransfer({ date, amount, action }, { tableData }) {
-    const { id } = tableData;
-    const { transfers } = this.props.dashboard;
-    let uid = transfers[id]['uid'];
+  handleEditTransfer({ date, amount, action }, data) {
+    date = date ? date : new Date();
+    let uid = this.getTransferUid(data);
     this.props.editTransfer(uid, { date, amount, action });
   }
 

@@ -1,7 +1,7 @@
 from rest_framework import generics
 from rest_framework.response import Response
 
-from .serializers import TransferSerializer, BrokerageInputSerializer, TransferManualSaveSerializer, TransferManualDeleteSerializer, TransferManualEditSerializer
+from .serializers import TransferSerializer, BrokerageInputSerializer, TransferManualSaveSerializer, ManualDeleteByUidSerializer, TransferManualEditSerializer
 from .models import Portfolio, Brokerage, Transfer
 from backend.tdameritrade.util.helpers import upsert_transfers as upsert_tda_transfers
 from backend.tdameritrade.models import TDAccount
@@ -73,7 +73,7 @@ class SaveManualTransferAPI(generics.GenericAPIView):
 
 class DeleteManualTransferAPI(generics.GenericAPIView):
     url = "bdc/transfers/manual/delete/"
-    serializer_class = TransferManualDeleteSerializer
+    serializer_class = ManualDeleteByUidSerializer
 
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
@@ -81,7 +81,6 @@ class DeleteManualTransferAPI(generics.GenericAPIView):
         transfer = Transfer.objects.get(uid=serializer.data['uid'])
         transfer.delete()
         portfolios = Portfolio.objects.filter(bdc_user=self.request.user)
-
         return Response(TransferSerializer(Transfer.objects.filter(portfolio__in=portfolios).order_by('-date'), many=True).data)
 
 class EditManualTransferAPI(generics.GenericAPIView):

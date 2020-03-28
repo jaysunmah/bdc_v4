@@ -45,7 +45,7 @@ class UpdatePositionStockPricesSerializer(serializers.Serializer):
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
-        fields = ('uid', 'portfolio', 'stock', 'quantity', 'value', 'is_buy_type', 'date')
+        fields = ('uid', 'portfolio', 'stock', 'quantity', 'value', 'is_buy_type', 'manually_added', 'date')
 
 class TransferSerializer(serializers.ModelSerializer):
     class Meta:
@@ -63,8 +63,12 @@ class TransferManualSaveSerializer(serializers.Serializer):
             raise serializers.ValidationError("Invalid action: " + value)
         return value
 
-class TransferManualDeleteSerializer(serializers.Serializer):
+class ManualDeleteByUidSerializer(serializers.Serializer):
     uid = serializers.CharField()
+    def validate_uid(self, value):
+        if "manual_" not in value:
+            raise serializers.ValidationError("Cannot delete this uid because it doesn't seem to be manually added: " + value)
+        return value
 
 class TransferManualEditSerializer(serializers.Serializer):
     uid = serializers.CharField()
@@ -77,5 +81,55 @@ class TransferManualEditSerializer(serializers.Serializer):
             raise serializers.ValidationError("Invalid action: " + value)
         return value
 
+    def validate_uid(self, value):
+        if "manual_" not in value:
+            raise serializers.ValidationError("Cannot edit this uid because it doesn't seem to be manually added: " + value)
+        return value
+
 class BrokerageInputSerializer(serializers.Serializer):
     brokerage = serializers.CharField()
+
+class OrderManualSaveSerializer(serializers.Serializer):
+    brokerage = serializers.CharField()
+    action= serializers.CharField()
+    stock = serializers.CharField()
+    quantity = serializers.DecimalField(10, 4)
+    price = serializers.DecimalField(10, 4)
+    date = serializers.DateField()
+
+    def validate_stock(self, value):
+        if value.upper() != value:
+            raise serializers.ValidationError("Stock ticker must be in all caps")
+        if len(value) > 5:
+            raise serializers.ValidationError("Stock ticker can be at most length 5")
+        return value
+
+    def validate_action(self, value):
+        if value != "BUY" and value != "SELL":
+            raise serializers.ValidationError("Action is invalid. Can only be 'BUY' or 'SELL'")
+        return value
+
+class OrderManualEditSerializer(serializers.Serializer):
+    uid = serializers.CharField()
+    action = serializers.CharField()
+    stock = serializers.CharField()
+    quantity = serializers.DecimalField(10, 4)
+    price = serializers.DecimalField(10, 4)
+    date = serializers.DateField()
+
+    def validate_uid(self, value):
+        if "manual_" not in value:
+            raise serializers.ValidationError("Cannot edit this uid because it doesn't seem to be manually added: " + value)
+        return value
+
+    def validate_stock(self, value):
+        if value.upper() != value:
+            raise serializers.ValidationError("Stock ticker must be in all caps")
+        if len(value) > 5:
+            raise serializers.ValidationError("Stock ticker can be at most length 5")
+        return value
+
+    def validate_action(self, value):
+        if value != "BUY" and value != "SELL":
+            raise serializers.ValidationError("Action is invalid. Can only be 'BUY' or 'SELL'")
+        return value

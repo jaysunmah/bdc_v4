@@ -150,3 +150,36 @@ export const editTransfer = (uid, { date, action, amount }) => {
     })
   }
 }
+
+export const saveOrder = (brokerage, { action, stock, quantity, price, date }) => {
+  return (dispatch, getState) => {
+    dispatch({ type: "SAVING_ORDER" });
+    return fetchWrapper(dispatch, getState, "POST", "/api/bdc/orders/manual/save/", {
+      brokerage, action, stock, quantity, price, date
+    }, (data) => {
+      dispatch({ type: "SAVED_ORDER", orders: data })
+    })
+  }
+}
+
+export const deleteOrder = (uid) => {
+  return (dispatch, getState) => {
+    dispatch({ type: "DELETING_ORDER" });
+    return fetchWrapper(dispatch, getState, "POST", "/api/bdc/orders/manual/delete/", {
+      uid
+    }, (data) => {
+      dispatch({ type: "DELETED_ORDER", orders: data })
+    })
+  }
+}
+
+export const editOrder = (uid, { action, stock, quantity, price, date }) => {
+  return (dispatch, getState) => {
+    dispatch({ type: "EDITING_ORDER" });
+    return fetchWrapper(dispatch, getState, "POST", "/api/bdc/orders/manual/edit/", {
+      uid, stock, action, quantity, price, date
+    }, (data) => {
+      dispatch({ type: "EDITED_ORDER", orders: data })
+    })
+  }
+}

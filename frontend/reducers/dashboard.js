@@ -12,7 +12,8 @@ const initialState = {
   status: "Loading portfolio info...",
   deleting_portfolio: false,
   saving_portfolio: false,
-  processing_transfer: false
+  processing_transfer: false,
+  processing_order: false
 }
 
 export default function dashboard(state=initialState, action) {
@@ -50,8 +51,16 @@ export default function dashboard(state=initialState, action) {
     case 'DELETING_TRANSFER':
     case 'EDITING_TRANSFER':
       return {...state, processing_transfer: true};
+    case 'SAVED_ORDER':
+    case 'DELETED_ORDER':
+    case 'EDITED_ORDER':
+      return {...state, orders: action.orders, processing_order: false  };
+    case 'SAVING_ORDER':
+    case 'DELETING_ORDER':
+    case 'EDITING_ORDER':
+      return {...state, processing_order: true };
     case 'ERROR':
-      return {...state, status: action.error_message, saving_portfolio: false, deleting_portfolio: false };
+      return {...state, status: action.error_message, saving_portfolio: false, deleting_portfolio: false, processing_transfer: false, processing_order: false };
     default:
       return state;
   }

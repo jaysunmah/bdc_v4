@@ -3,18 +3,12 @@ import datetime
 from django.db import models
 from django.contrib.auth.models import User
 
+RH_BROKERAGE = "rh"
+TDA_BROKERAGE = "tda"
+
 def save_quotes_ignore_exists(quotes, stock):
     stock_quotes = [StockQuote(stock=stock, date=quote['date'], price=quote['close']) for quote in quotes]
     StockQuote.objects.bulk_create(stock_quotes, batch_size=100, ignore_conflicts=True)
-
-class Brokerage(models.Model):
-    name = models.CharField(max_length=100, primary_key=True)
-
-    def is_tda(self):
-        return self.name == "tda"
-
-    def is_rh(self):
-        return self.name == "rh"
 
 class Stock(models.Model):
     ticker = models.CharField(max_length=10, primary_key=True)
@@ -31,7 +25,7 @@ class Portfolio(models.Model):
     # Assume one bdc_v4 user can have multiple portfolios
     bdc_user = models.ForeignKey(User, on_delete=models.CASCADE)
     nickname = models.CharField(max_length=1000)
-    brokerage = models.ForeignKey(Brokerage, on_delete=models.CASCADE)
+    brokerage = models.CharField(max_length=5)
 
     class Meta:
         # For now, assume each user can only have 1 portfolio of the same brokerage type

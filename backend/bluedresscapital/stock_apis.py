@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 from backend.bluedresscapital.models import save_quotes_ignore_exists
 from .serializers import StockUpsertSerializer, StockQuoteUpsertSerializer, StockQuoteSerializer, BrokerageInputSerializer
-from .models import StockQuote, Stock, Brokerage, Portfolio, Order
+from .models import StockQuote, Stock, Portfolio, Order
 from backend.tdameritrade.tdascraper import TDAClient
 from backend.tdameritrade.models import TDAccount
 
@@ -102,8 +102,7 @@ class LoadPortfolioStockPricesAPI(generics.GenericAPIView):
         """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        brokerage = Brokerage.objects.get(name=serializer.data['brokerage'])
-        portfolio = Portfolio.objects.get(bdc_user=self.request.user, brokerage=brokerage)
+        portfolio = Portfolio.objects.get(bdc_user=self.request.user, brokerage=serializer.data['brokerage'])
         orders = Order.objects.filter(portfolio=portfolio).order_by('date')
 
         stock_count = {}

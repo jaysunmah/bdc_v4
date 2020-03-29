@@ -1,8 +1,8 @@
 from rest_framework import generics
 from rest_framework.response import Response
 
-from .serializers import PositionSerializer, PositionUpsertSerializer, UpdatePositionStockPricesSerializer
-from .models import Position, Portfolio, Brokerage
+from .serializers import PositionSerializer, BrokerageInputSerializer
+from .models import Position, Portfolio
 from .portfolio_apis import get_portfolios
 from backend.tdameritrade.models import TDAccount
 from backend.tdameritrade.tdascraper import TDAClient
@@ -10,7 +10,7 @@ from backend.common.helpers import upsert_positions
 
 class PositionAPI(generics.GenericAPIView):
     url = "bdc/positions/"
-    serializer_class = PositionUpsertSerializer
+    serializer_class = BrokerageInputSerializer
 
     def get(self, request):
         portfolios = get_portfolios(request, self.request.user)
@@ -24,19 +24,17 @@ class PositionAPI(generics.GenericAPIView):
     def post(self, request) -> Response:
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        brokerage = Brokerage.objects.get(name=serializer.data['brokerage'])
-        portfolio = Portfolio.objects.get(bdc_user=self.request.user, brokerage=brokerage)
+        portfolio = Portfolio.objects.get(bdc_user=self.request.user, brokerage=serializer.data['brokerage'])
         return upsert_positions(portfolio)
 
 class UpdatePositionStockPricesAPI(generics.GenericAPIView):
     url = "bdc/positions/update_prices/"
-    serializer_class = UpdatePositionStockPricesSerializer
+    serializer_class = BrokerageInputSerializer
 
     def post(self, request) -> Response:
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        brokerage = Brokerage.objects.get(name=serializer.data['brokerage'])
-        positions = Position.objects.filter(portfolio__bdc_user=self.request.user, portfolio__brokerage=brokerage)
+        positions = Position.objects.filter(portfolio__bdc_user=self.request.user, portfolio__brokerage=serializer.data['brokerage'])
         td_account = TDAccount.objects.get(bdc_user=self.request.user)
         for position in positions:
             print("Updating ", position.stock.ticker)

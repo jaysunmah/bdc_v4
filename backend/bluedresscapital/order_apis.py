@@ -7,7 +7,7 @@ import time
 
 from .serializers import OrderSerializer, BrokerageInputSerializer, OrderManualSaveSerializer, \
     ManualDeleteByUidSerializer, OrderManualEditSerializer
-from .models import Portfolio, Brokerage, Order, Stock
+from .models import Portfolio, Order, Stock, RH_BROKERAGE, TDA_BROKERAGE
 from backend.tdameritrade.util.helpers import upsert_orders as upsert_tda_orders
 from backend.tdameritrade.models import TDAccount
 from backend.tdameritrade.tdascraper import TDAClient
@@ -26,8 +26,7 @@ class OrdersAPI(generics.GenericAPIView):
         :return:
         """
         if 'brokerage' in request.GET:
-            brokerage = Brokerage.objects.get(name=request.GET['brokerage'])
-            portfolios = Portfolio.objects.filter(bdc_user=self.request.user, brokerage=brokerage)
+            portfolios = Portfolio.objects.filter(bdc_user=self.request.user, brokerage=request.GET['brokerage'])
         else:
             portfolios = Portfolio.objects.filter(bdc_user=self.request.user)
         orders = Order.objects.filter(portfolio__in=portfolios).order_by('-date')
@@ -41,13 +40,12 @@ class OrdersAPI(generics.GenericAPIView):
         """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        brokerage = Brokerage.objects.get(name=serializer.data['brokerage'])
-        portfolio = Portfolio.objects.get(bdc_user=self.request.user, brokerage=brokerage)
+        portfolio = Portfolio.objects.get(bdc_user=self.request.user, brokerage=serializer.data['brokerage'])
 
-        if brokerage.is_rh():
+        if serializer.data['brokerage'] == RH_BROKERAGE:
             rh_account = RHAccount.objects.get(bdc_user=self.request.user)
             return upsert_rh_orders(RHClient(rh_account), portfolio)
-        elif brokerage.is_tda():
+        elif serializer.data['brokerage'] == TDA_BROKERAGE:
             td_account = TDAccount.objects.get(bdc_user=self.request.user)
             return upsert_tda_orders(TDAClient(td_account), portfolio)
 
@@ -72,7 +70,7 @@ class SaveManualOrderAPI(generics.GenericAPIView):
             stock.save()
         order = Order(
             uid="manual__" + str(time.time_ns()),
-            portfolio=Portfolio.objects.get(brokerage__name=serializer.data['brokerage']),
+            portfolio=Portfolio.objects.get(brokerage=serializer.data['brokerage']),
             stock=stock,
             quantity=serializer.data['quantity'],
             value=serializer.data['price'],

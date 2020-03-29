@@ -2,7 +2,7 @@ from rest_framework import generics
 from rest_framework.response import Response
 
 from .serializers import TransferSerializer, BrokerageInputSerializer, TransferManualSaveSerializer, ManualDeleteByUidSerializer, TransferManualEditSerializer
-from .models import Portfolio, Brokerage, Transfer
+from .models import Portfolio, Transfer, TDA_BROKERAGE, RH_BROKERAGE
 from backend.tdameritrade.util.helpers import upsert_transfers as upsert_tda_transfers
 from backend.tdameritrade.models import TDAccount
 from backend.tdameritrade.tdascraper import TDAClient
@@ -23,8 +23,7 @@ class TransfersAPI(generics.GenericAPIView):
         :return:
         """
         if 'brokerage' in request.GET:
-            brokerage = Brokerage.objects.get(name=request.GET['brokerage'])
-            portfolios = Portfolio.objects.filter(bdc_user=self.request.user, brokerage=brokerage)
+            portfolios = Portfolio.objects.filter(bdc_user=self.request.user, brokerage=request.GET['brokerage'])
         else:
             portfolios = Portfolio.objects.filter(bdc_user=self.request.user)
         transfers = Transfer.objects.filter(portfolio__in=portfolios).order_by('-date')
@@ -38,13 +37,12 @@ class TransfersAPI(generics.GenericAPIView):
         """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        brokerage = Brokerage.objects.get(name=serializer.data['brokerage'])
-        portfolio = Portfolio.objects.get(bdc_user=self.request.user, brokerage=brokerage)
+        portfolio = Portfolio.objects.get(bdc_user=self.request.user, brokerage=serializer.data['brokerage'])
 
-        if brokerage.is_rh():
+        if serializer.data['brokerage'] == RH_BROKERAGE:
             rh_account = RHAccount.objects.get(bdc_user=self.request.user)
             return upsert_rh_transfers(RHClient(rh_account), portfolio)
-        elif brokerage.is_tda():
+        elif serializer.data['brokerage'] == TDA_BROKERAGE:
             td_account = TDAccount.objects.get(bdc_user=self.request.user)
             return upsert_tda_transfers(TDAClient(td_account), portfolio)
 
@@ -57,8 +55,7 @@ class SaveManualTransferAPI(generics.GenericAPIView):
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        brokerage = Brokerage.objects.get(name=serializer.data['brokerage'])
-        portfolio = Portfolio.objects.get(bdc_user=self.request.user, brokerage=brokerage)
+        portfolio = Portfolio.objects.get(bdc_user=self.request.user, brokerage=serializer.data['brokerage'])
         t = Transfer(
             uid="manual_" + str(time.time_ns()),
             portfolio=portfolio,

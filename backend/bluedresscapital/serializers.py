@@ -18,9 +18,6 @@ class PositionSerializer(serializers.ModelSerializer):
         model = Position
         fields = ('portfolio', 'quantity', 'value', 'stock')
 
-class PositionUpsertSerializer(serializers.Serializer):
-    brokerage = serializers.CharField()
-
 class StockSerializer(serializers.ModelSerializer):
     class Meta:
         model = Stock
@@ -38,9 +35,6 @@ class StockQuoteUpsertSerializer(serializers.Serializer):
     ticker = serializers.CharField()
     start_date = serializers.DateField()
     end_date = serializers.DateField()
-
-class UpdatePositionStockPricesSerializer(serializers.Serializer):
-    brokerage = serializers.CharField()
 
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:

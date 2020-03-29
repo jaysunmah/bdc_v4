@@ -8,7 +8,7 @@ import pandas_market_calendars as mcal
 import copy
 
 from .serializers import PortfolioSerializer, PortfolioUpsertSerializer, PortfolioDeleteSerializer
-from .models import Portfolio, Brokerage, Order, StockQuote
+from .models import Portfolio, Order, StockQuote, RH_BROKERAGE, TDA_BROKERAGE
 from backend.tdameritrade.util.helpers import upsert_orders as upsert_tda_orders
 from backend.tdameritrade.util.helpers import upsert_transfers as upsert_tda_transfers
 from backend.tdameritrade.models import TDAccount
@@ -52,15 +52,15 @@ class PortfolioAPI(generics.GenericAPIView):
         """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        brokerage = Brokerage.objects.get(name=serializer.data['brokerage'])
+        brokerage = serializer.data['brokerage']
         portfolio, _ = Portfolio.objects.get_or_create(bdc_user=self.request.user, brokerage=brokerage, nickname=serializer.data['nickname'])
 
-        if brokerage.is_tda():
+        if brokerage == TDA_BROKERAGE:
             td_account = TDAccount.objects.get(bdc_user=self.request.user)
             td_client = TDAClient(td_account)
             upsert_tda_orders(td_client, portfolio)
             upsert_tda_transfers(td_client, portfolio)
-        elif brokerage.is_rh():
+        elif brokerage == RH_BROKERAGE:
             rh_account = RHAccount.objects.get(bdc_user=self.request.user)
             rh_client = RHClient(rh_account)
             upsert_rh_orders(rh_client, portfolio)

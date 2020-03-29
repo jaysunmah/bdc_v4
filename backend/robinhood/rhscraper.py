@@ -40,7 +40,7 @@ class RHClient:
                 'instruction': order['side'],
                 'date': execution['timestamp'],
                 'stock': get_stock_from_instrument_id(get_instrument_id_from_url(order['instrument'])),
-                'quantity': Decimal(execution['quantity']),
+                'quantity': Decimal(order['quantity']),
                 'value': Decimal(execution['price'])
             }
         return [get_order(order) for order in res if filter_order(order)]

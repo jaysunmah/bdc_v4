@@ -1,15 +1,12 @@
 from rest_framework import generics
 from rest_framework.response import Response
 
-from .serializers import PositionSerializer, PositionUpsertSerializer, PortfolioSerializer, UpdatePositionStockPricesSerializer
-from .models import Position, Portfolio, Stock, Brokerage
+from .serializers import PositionSerializer, PositionUpsertSerializer, UpdatePositionStockPricesSerializer
+from .models import Position, Portfolio, Brokerage
 from .portfolio_apis import get_portfolios
 from backend.tdameritrade.models import TDAccount
 from backend.tdameritrade.tdascraper import TDAClient
-from backend.tdameritrade.util.helpers import upsert_positions as upsert_td_positions
-from backend.robinhood.models import RHAccount
-from backend.robinhood.rhscraper import RHClient
-from backend.robinhood.util.helpers import upsert_positions as upsert_rh_positions
+from backend.common.helpers import upsert_positions
 
 class PositionAPI(generics.GenericAPIView):
     url = "bdc/positions/"
@@ -29,15 +26,7 @@ class PositionAPI(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         brokerage = Brokerage.objects.get(name=serializer.data['brokerage'])
         portfolio = Portfolio.objects.get(bdc_user=self.request.user, brokerage=brokerage)
-
-        if brokerage.is_tda():
-            td_account = TDAccount.objects.get(bdc_user=self.request.user)
-            return upsert_td_positions(TDAClient(td_account), portfolio)
-        elif brokerage.is_rh():
-            rh_account = RHAccount.objects.get(bdc_user=self.request.user)
-            return upsert_rh_positions(RHClient(rh_account), portfolio)
-
-        return Response({"error": "Unhandled brokerage type: %s" % brokerage})
+        return upsert_positions(portfolio)
 
 class UpdatePositionStockPricesAPI(generics.GenericAPIView):
     url = "bdc/positions/update_prices/"

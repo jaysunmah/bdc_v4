@@ -2,6 +2,8 @@ import datetime
 from decimal import Decimal
 
 import requests
+
+from backend.bluedresscapital import StockQuote
 from .models import TDAccount
 
 def has_expired_access_token(res):
@@ -70,9 +72,12 @@ class TDAClient:
 		return positions
 
 	def get_transactions(self):
+		print("Authenticating...")
 		self.authenticate()
 		url = self.get_transactions_url()
+		print("Making GET request")
 		res = requests.get(url, headers=self.get_auth_header()).json()
+		print("Done!")
 		def filter_trade(t):
 			return ((t['type']  == 'TRADE') or
 					(t['type'] == 'RECEIVE_AND_DELIVER' and t['description'] == 'TRANSFER OF SECURITY OR OPTION IN'))
@@ -81,9 +86,15 @@ class TDAClient:
 				value = Decimal(t['transactionItem']['price'])
 				instruction = t['transactionItem']['instruction']
 			else:
+				ticker = t['transactionItem']['instrument']['symbol']
 				date = datetime.datetime.fromisoformat(t['transactionDate'][:10])
-				value = Decimal(self.get_historical_quote(t['transactionItem']['instrument']['symbol'], date, date + datetime.timedelta(days=1))[0]['close'])
 				instruction = 'BUY'
+				try:
+					stock_quote = StockQuote.objects.get(stock__ticker=ticker, date=date)
+					value = stock_quote.price
+				except StockQuote.DoesNotExist:
+					print("Couldn't find price of %s on %s, performing scrape" % (ticker, date))
+					value = Decimal(self.get_historical_quote(t['transactionItem']['instrument']['symbol'], date, date + datetime.timedelta(days=1))[0]['close'])
 
 			return {
 				'uid': t['transactionId'],
@@ -99,10 +110,17 @@ class TDAClient:
 		self.authenticate()
 		url = self.get_transactions_url()
 		res = requests.get(url, headers=self.get_auth_header()).json()
-		for r in res:
-			print("")
-			print(r)
-			print("")
+		def filter_transfer(t):
+			return t['type'] == 'ELECTRONIC_FUND'
+		def get_transfer(t):
+			return {
+				'uid': t['transactionId'],
+				'amount': abs(float(t['netAmount'])),
+				'is_deposit_type': float(t['netAmount']) >= 0,
+				'date': t['settlementDate']
+			}
+		return [get_transfer(t) for t in res if filter_transfer(t)]
+
 
 	def get_historical_quote(self, ticker: str, start: datetime.datetime, end: datetime.datetime):
 		self.authenticate()

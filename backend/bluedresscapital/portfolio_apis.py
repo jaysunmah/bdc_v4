@@ -10,15 +10,14 @@ import copy
 from .serializers import PortfolioSerializer, PortfolioUpsertSerializer, PortfolioDeleteSerializer
 from .models import Portfolio, Brokerage, Order, StockQuote
 from backend.tdameritrade.util.helpers import upsert_orders as upsert_tda_orders
-from backend.tdameritrade.util.helpers import upsert_positions as upsert_tda_positions
 from backend.tdameritrade.util.helpers import upsert_transfers as upsert_tda_transfers
 from backend.tdameritrade.models import TDAccount
 from backend.tdameritrade.tdascraper import TDAClient
 from backend.robinhood.util.helpers import upsert_orders as upsert_rh_orders
-from backend.robinhood.util.helpers import upsert_positions as upsert_rh_positions
 from backend.robinhood.util.helpers import upsert_transfers as upsert_rh_transfers
 from backend.robinhood.models import RHAccount
 from backend.robinhood.rhscraper import RHClient
+from backend.common.helpers import upsert_positions
 
 def get_portfolios(request, user):
     if 'brokerage' in request.GET:
@@ -60,14 +59,17 @@ class PortfolioAPI(generics.GenericAPIView):
             td_account = TDAccount.objects.get(bdc_user=self.request.user)
             td_client = TDAClient(td_account)
             upsert_tda_orders(td_client, portfolio)
-            upsert_tda_positions(td_client, portfolio)
             upsert_tda_transfers(td_client, portfolio)
         elif brokerage.is_rh():
             rh_account = RHAccount.objects.get(bdc_user=self.request.user)
             rh_client = RHClient(rh_account)
             upsert_rh_orders(rh_client, portfolio)
-            upsert_rh_positions(rh_client, portfolio)
             upsert_rh_transfers(rh_client, portfolio)
+
+        # IMPORTANT only upsert positions after orders are upserted!
+        upsert_positions(portfolio)
+        # IMPORTANT only upsert port hist after ALL history is upserted!
+        # TODO upsert_portfolio_history(portfolio)
 
         return Response({
             "new_portfolio": PortfolioSerializer(portfolio).data,

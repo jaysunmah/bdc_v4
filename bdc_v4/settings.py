@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'frontend',
     'knox',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -126,4 +127,15 @@ STATIC_URL = '/static/'
 # Rest framework settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': ('knox.auth.TokenAuthentication',),
+}
+
+# Channels
+ASGI_APPLICATION = 'bdc_v4.routing.application'
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
 }

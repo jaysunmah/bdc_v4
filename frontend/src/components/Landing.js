@@ -5,10 +5,18 @@ import {connect} from 'react-redux';
 import { notes, menu } from '../../actions';
 
 class Landing extends Component {
-  state = {
-    text: "",
-    primeText: "",
-    updateNoteId: null,
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      text: "",
+      primeText: "",
+      updateNoteId: null,
+    }
+  }
+
+  componentDidMount() {
+
   }
 
   resetForm = () => {
@@ -71,7 +79,7 @@ class Landing extends Component {
           />
           <input type="submit" value="Check ifPrime" />
         </form>
-        <p>Is prime: {this.props.menu.isPrime.toString()} </p>
+        <p>Is prime: {this.props.menu.isPrime} </p>
       </BdcContainer>
     );
   }

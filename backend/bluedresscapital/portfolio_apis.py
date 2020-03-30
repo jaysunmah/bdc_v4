@@ -1,14 +1,16 @@
 import datetime
 from decimal import Decimal
 
+from knox.models import AuthToken
 from rest_framework import generics
 from rest_framework.response import Response
 
 import pandas_market_calendars as mcal
 import copy
 
+from backend.bluedresscapital.stock_apis import upsert_portfolio_quotes
 from .serializers import PortfolioSerializer, PortfolioUpsertSerializer, PortfolioDeleteSerializer
-from .models import Portfolio, Order, StockQuote, RH_BROKERAGE, TDA_BROKERAGE
+from .models import Portfolio, Order, StockQuote, RH_BROKERAGE, TDA_BROKERAGE, WEB_BROKERAGE
 from backend.tdameritrade.util.helpers import upsert_orders as upsert_tda_orders
 from backend.tdameritrade.util.helpers import upsert_transfers as upsert_tda_transfers
 from backend.tdameritrade.models import TDAccount
@@ -18,14 +20,90 @@ from backend.robinhood.util.helpers import upsert_transfers as upsert_rh_transfe
 from backend.robinhood.models import RHAccount
 from backend.robinhood.rhscraper import RHClient
 from backend.common.helpers import upsert_positions
+from knox.settings import CONSTANTS
 
 def get_portfolios(request, user):
     if 'brokerage' in request.GET:
-        brokerage = Brokerage.objects.get(name=request.GET['brokerage'])
-        portfolios = Portfolio.objects.filter(bdc_user=user, brokerage=brokerage)
+        portfolios = Portfolio.objects.filter(bdc_user=user, brokerage=request.GET['brokerage'])
     else:
         portfolios = Portfolio.objects.filter(bdc_user=user)
     return portfolios
+
+def auth_user_via_token(token):
+    try:
+        return AuthToken.objects.get(token_key=token[:CONSTANTS.TOKEN_KEY_LENGTH])
+    except AuthToken.DoesNotExist:
+        return None
+
+def get_or_create_portfolio(user, brokerage, nickname):
+    try:
+        portfolio, _ = Portfolio.objects.get_or_create(bdc_user=user, brokerage=brokerage,
+                                                   nickname=nickname)
+        return portfolio
+    except:
+        return None
+
+def create_and_load_portfolio(token, nickname, brokerage, socket):
+    """
+    Comprehensive function to create portfolio. Will perform the following steps:a
+        0. Authenticate user
+        1. Create portfolio object - if one already exists, error out immediately.
+        1.1 If brokerage == web, just return now. There's nothing to scrape after
+        2. Scrape + upsert orders
+        3. Scrape + upsert transfers
+        4. Scrape + upsert stock quotes pertaining to the portfolio's orders - depends on step 2
+        5. Compute + upsert portfolio positions - depends on step 2 and 4
+        6. Compute + uspert portfolio performance - depends on steps 2, 3, and 4
+        7. Mark done depends on steps 5 and 6
+    :param token: token key for AuthToken
+    :param nickname: brokerage nickname
+    :param brokerage: brokerage type (i.e. rh, tda, web)
+    :param socket: socket client to send updates to
+    :return: Returns None, but will have socket send its results to the client when step 7 is done.
+    """
+    auth_token = auth_user_via_token(token)
+    if auth_token is None:
+        socket.mark_error("Invalid token")
+        return
+    user = auth_token.user
+    portfolio = get_or_create_portfolio(user, brokerage, nickname)
+    if portfolio is None:
+        socket.mark_error("Portfolio with the given brokerage and user already exists")
+        return
+    elif brokerage == WEB_BROKERAGE:
+        socket.mark_done(PortfolioSerializer(portfolio).data, portfolio.id)
+        return
+
+    if brokerage == TDA_BROKERAGE:
+        tda_upsert_orders_and_transfers(user, portfolio, socket)
+    elif brokerage == RH_BROKERAGE:
+        rh_upsert_orders_and_transfers(user, portfolio, socket)
+    else:
+        socket.mark_error("Invalid brokerage type: " + brokerage)
+        return
+    socket.update_status("Upserting portfolio quotes...")
+    upsert_portfolio_quotes(portfolio, user, socket=socket)
+    # IMPORTANT only upsert positions after orders are upserted!
+    socket.update_status("Upserting portfolio positions...")
+    upsert_positions(portfolio)
+    socket.mark_done(PortfolioSerializer(portfolio).data, portfolio.id)
+
+
+def tda_upsert_orders_and_transfers(user, portfolio, socket):
+    td_account = TDAccount.objects.get(bdc_user=user)
+    td_client = TDAClient(td_account)
+    socket.update_status("Scraping + upserting TDA orders...")
+    upsert_tda_orders(td_client, portfolio)
+    socket.update_status("Scraping + upserting TDA transfers...")
+    upsert_tda_transfers(td_client, portfolio)
+
+def rh_upsert_orders_and_transfers(user, portfolio, socket):
+    rh_account = RHAccount.objects.get(bdc_user=user)
+    rh_client = RHClient(rh_account)
+    socket.update_status("Scraping + upserting RH orders...")
+    upsert_rh_orders(rh_client, portfolio)
+    socket.update_status("Scraping + upserting RH transfers...")
+    upsert_rh_transfers(rh_client, portfolio)
 
 class PortfolioAPI(generics.GenericAPIView):
     url = "bdc/portfolio/"
@@ -37,44 +115,6 @@ class PortfolioAPI(generics.GenericAPIView):
         for portfolio in portfolios:
             port_dict[portfolio.id] = PortfolioSerializer(portfolio).data
         return Response(port_dict)
-
-    def post(self, request):
-        """
-        Posting to this endpoint will idemotently create the desired portfolio.
-        If given a brokerage that's not of type web (i.e. rh or tda), it will also do the following:
-            1. Create portfolio object (duh)
-            2. Scrape all orders relevant to the portfolio
-            3. Scrape all positions relevant to the portfolio
-            4. (TODO) Load all quotes related to the orders in the portfolio
-            5. Save them as meta data for the portfolio
-        :param request:
-        :return:
-        """
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        brokerage = serializer.data['brokerage']
-        portfolio, _ = Portfolio.objects.get_or_create(bdc_user=self.request.user, brokerage=brokerage, nickname=serializer.data['nickname'])
-
-        if brokerage == TDA_BROKERAGE:
-            td_account = TDAccount.objects.get(bdc_user=self.request.user)
-            td_client = TDAClient(td_account)
-            upsert_tda_orders(td_client, portfolio)
-            upsert_tda_transfers(td_client, portfolio)
-        elif brokerage == RH_BROKERAGE:
-            rh_account = RHAccount.objects.get(bdc_user=self.request.user)
-            rh_client = RHClient(rh_account)
-            upsert_rh_orders(rh_client, portfolio)
-            upsert_rh_transfers(rh_client, portfolio)
-
-        # IMPORTANT only upsert positions after orders are upserted!
-        upsert_positions(portfolio)
-        # IMPORTANT only upsert port hist after ALL history is upserted!
-        # TODO upsert_portfolio_history(portfolio)
-
-        return Response({
-            "new_portfolio": PortfolioSerializer(portfolio).data,
-            "port_id": portfolio.id
-        })
 
 class DeletePortfolioAPI(generics.GenericAPIView):
     url = "bdc/portfolio/delete/"
@@ -89,7 +129,7 @@ class DeletePortfolioAPI(generics.GenericAPIView):
             port_dict[portfolio.id] = PortfolioSerializer(portfolio).data
 
         import time
-        time.sleep(2)
+        time.sleep(1)
         return Response(port_dict)
 
 class PortfolioHistoryAPI(generics.GenericAPIView):

@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 
 RH_BROKERAGE = "rh"
 TDA_BROKERAGE = "tda"
+WEB_BROKERAGE = "web"
 
 def save_quotes_ignore_exists(quotes, stock):
     stock_quotes = [StockQuote(stock=stock, date=quote['date'], price=quote['close']) for quote in quotes]

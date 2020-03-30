@@ -78,12 +78,44 @@ class StockQuoteAPI(generics.GenericAPIView):
 
 def upsert_quotes(ticker, start, end, user):
     print("Upserting quotes for %s from %s to %s" % (ticker, start, end))
+    # NOTE(ma): this is a bug - if a user doesn't have a td account linked, they won't be able to scrape quotes
     td_account = TDAccount.objects.get(bdc_user=user)
     td_client = TDAClient(td_account)
     quotes = td_client.get_historical_quote(ticker, start, end)
     stock = Stock.objects.get(ticker=ticker)
     save_quotes_ignore_exists(quotes, stock)
     return stock
+
+def upsert_portfolio_quotes(portfolio, user, socket=None):
+    orders = Order.objects.filter(portfolio=portfolio).order_by('date')
+
+    stock_count = {}
+    stock_min_date = {}
+    stock_max_date = {}
+
+    for order in orders:
+        ticker = order.stock.ticker
+        if ticker not in stock_count:
+            stock_min_date[ticker] = order.date
+            stock_count[ticker] = 0
+
+        if order.is_buy_type:
+            stock_count[ticker] += order.quantity
+        else:
+            stock_count[ticker] -= order.quantity
+
+        if stock_count[ticker] == Decimal(0):
+            stock_max_date[ticker] = order.date
+
+    for stock in stock_count:
+        start_date = stock_min_date[stock]
+        if stock in stock_max_date and stock_count[stock] == Decimal(0):
+            end_date = stock_max_date[stock]
+        else:
+            end_date = datetime.datetime.now()
+        if socket is not None:
+            socket.update_status("Upserting quotes for %s from %s to %s" % (stock, start_date, end_date))
+        upsert_quotes(stock, start_date, end_date, user)
 
 class LoadPortfolioStockPricesAPI(generics.GenericAPIView):
     url = "bdc/stock/portfolio/load_quotes/"
@@ -103,32 +135,6 @@ class LoadPortfolioStockPricesAPI(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         portfolio = Portfolio.objects.get(bdc_user=self.request.user, brokerage=serializer.data['brokerage'])
-        orders = Order.objects.filter(portfolio=portfolio).order_by('date')
-
-        stock_count = {}
-        stock_min_date = {}
-        stock_max_date = {}
-
-        for order in orders:
-            ticker = order.stock.ticker
-            if ticker not in stock_count:
-                stock_min_date[ticker] = order.date
-                stock_count[ticker] = 0
-
-            if order.is_buy_type:
-                stock_count[ticker] += order.quantity
-            else:
-                stock_count[ticker] -= order.quantity
-
-            if stock_count[ticker] == Decimal(0):
-                stock_max_date[ticker] = order.date
-
-        for stock in stock_count:
-            start_date = stock_min_date[stock]
-            if stock in stock_max_date and stock_count[stock] == Decimal(0):
-                end_date = stock_max_date[stock]
-            else:
-                end_date = datetime.datetime.now()
-            upsert_quotes(stock, start_date, end_date, self.request.user)
+        upsert_portfolio_quotes(portfolio, self.request.user)
 
         return Response({"status": "success"})

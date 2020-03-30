@@ -13,7 +13,8 @@ const initialState = {
   deleting_portfolio: false,
   saving_portfolio: false,
   processing_transfer: false,
-  processing_order: false
+  processing_order: false,
+  saving_portfolio_status: ""
 }
 
 export default function dashboard(state=initialState, action) {
@@ -36,6 +37,8 @@ export default function dashboard(state=initialState, action) {
       return {...state, deleting_portfolio: false, portfolios: action.portfolios, selected_portfolio_id: -1, selected_portfolio: undefined};
     case 'SAVING_PORTFOLIO':
       return {...state, saving_portfolio: true};
+    case 'SAVING_PORTFOLIO_UPDATE':
+      return {...state, saving_portfolio_status: action.message };
     case 'SAVED_PORTFOLIO':
       portfolios = state['portfolios'];
       const { new_portfolio, port_id } = action;

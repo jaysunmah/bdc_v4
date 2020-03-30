@@ -89,32 +89,42 @@ export const deletePortfolio = (port_id) => {
   }
 }
 
-export const savePortfolio = (name, type) => {
+export const uuidv4 = () => {
+  return 'xxxxxxxx_xxxx_4xxx_yxxx_xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+export const savePortfolio = (nickname, brokerage) => {
   return (dispatch, getState) => {
     dispatch({ type: "SAVING_PORTFOLIO" });
-    let headers = getHeaderWithAuthToken(getState);
-    let body = JSON.stringify({ nickname: name, brokerage: type });
-    fetch("/api/bdc/portfolio/", { headers, method: "POST", body })
-      .then(res => {
-        if (res.status == 200) {
-          return res.json()
-        }
-        throw "Internal server error in getting orders"
+    const token = getState().auth.token;
+    let uid = uuidv4();
+    let portSocket = new WebSocket("ws://" + window.location.host + "/ws/bdc/save_portfolio/" + uid + "/");
 
-      })
-      .then(data => {
-        if (data.error) {
-          dispatch({ type: "ERROR", error_message: data.error});
-        } else {
-          dispatch({ type: "SAVED_PORTFOLIO", new_portfolio: data.new_portfolio, port_id: data.port_id });
-          loadAllOrders()(dispatch, getState);
-          loadAllPositions()(dispatch, getState);
-          loadAllTransfers()(dispatch, getState);
-        }
-      })
-      .catch(e => {
-        dispatch({ type: "ERROR", error_message: e })
-      })
+    portSocket.onmessage = function(e) {
+      const { message, status, new_portfolio, port_id }= JSON.parse(e.data);
+      if (status === 'done') {
+        portSocket.close();
+        loadAllOrders()(dispatch, getState);
+        loadAllPositions()(dispatch, getState);
+        loadAllTransfers()(dispatch, getState);
+        dispatch({ type: "SAVED_PORTFOLIO", new_portfolio, port_id });
+      } else if (status == 'error') {
+        dispatch({ type: "ERROR", error_message: message })
+      } else {
+        dispatch({ type: 'SAVING_PORTFOLIO_UPDATE', message });
+      }
+    };
+
+    portSocket.onclose = function(e) {
+      console.log('web socket closed');
+    };
+
+    portSocket.onopen = (e) => {
+      portSocket.send(JSON.stringify({ token, nickname, brokerage}));
+    }
   }
 }
 

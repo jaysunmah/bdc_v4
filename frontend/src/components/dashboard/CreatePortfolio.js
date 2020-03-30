@@ -22,7 +22,7 @@ class CreatePortfolio extends Component {
 
   render() {
     const { save_as } = this.state;
-    const { saving_portfolio } = this.props.dashboard;
+    const { saving_portfolio, saving_portfolio_status } = this.props.dashboard;
     return (
       <div>
         <h2>Add New Portfolio</h2>
@@ -73,8 +73,8 @@ class CreatePortfolio extends Component {
             }}/> }
           </div>
         </form>
+        {saving_portfolio && <p>Status: {saving_portfolio_status}</p>}
       </div>
-
     );
   }
 }

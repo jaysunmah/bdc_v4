@@ -1,6 +1,9 @@
 # Pycharm stuff
 .idea/
 
+# redis dump file
+dump.rdb
+
 # frontend stuff
 frontend/node_modules
 

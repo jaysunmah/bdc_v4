@@ -1,0 +1,32 @@
+service:
+  type: NodePort
+
+postgresql:
+  postgresqlPassword: mgb
+  image:
+    repository: arm64v8/postgres
+    tag: 9.5
+  securityContext:
+    enabled: false
+  global:
+    storageClass: local-path
+  persistence:
+    storageClass: local-path
+
+redis:
+  usePassword: false
+  image:
+    repository: arm64v8/redis
+    tag: latest
+  cluster:
+    enabled: false
+  master:
+    persistence:
+      storageClass: local-path
+      size: 2Gi
+    command: redis-server
+  slave:
+    persistence:
+      storageClass: local-path
+      size: 2Gi   
+    command: redis-server

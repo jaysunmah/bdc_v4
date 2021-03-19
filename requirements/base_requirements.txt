@@ -17,7 +17,7 @@ cryptography==2.8
 daphne==2.4.1
 decorator==4.4.2
 decouple==0.0.7
-Django==3.0.4
+Django==3.1.6
 django-rest-knox==4.1.0
 django-webpack-loader==0.7.0
 djangorestframework==3.11.0

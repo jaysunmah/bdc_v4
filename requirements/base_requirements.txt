@@ -30,7 +30,7 @@ ipython-genutils==0.2.0
 jedi==0.16.0
 msgpack==0.6.2
 msgpack-python==0.5.6
-numpy==1.18.2
+numpy==1.22.0
 pandas==1.0.3
 pandas-market-calendars==1.2
 parso==0.6.2
